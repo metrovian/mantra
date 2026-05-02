@@ -12,10 +12,10 @@ fi
 
 if [[ "$OS" == "Linux" ]]; then
   # shellcheck source=/dev/null
-  . "$ROOT_DIR/platform/linux.sh"
+  . "$ROOT_DIR/platform/linux/local.sh"
 elif [[ "$OS" == "Darwin" ]]; then
   # shellcheck source=/dev/null
-  . "$ROOT_DIR/platform/macos.sh"
+  . "$ROOT_DIR/platform/macos/local.sh"
 else
   echo "unsupported OS: $OS" >&2
   exit 1
