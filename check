@@ -31,8 +31,8 @@ fi
 SUBNET_PREFIX="$(awk -F. '{print $1 "." $2 "." $3}' <<<"$GATEWAY")"
 
 echo "interface $IFACE"
+echo "me        $LOCAL_IP"
 echo "gateway   $GATEWAY"
-echo "local IP  $LOCAL_IP"
 echo "subnet    ${SUBNET_PREFIX}.0/24"
 echo
 
