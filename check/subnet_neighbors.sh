@@ -8,7 +8,7 @@ check_subnet_neighbors() {
     "--------------------------------"
 
   for host in $(seq 1 254); do
-    detect_host "${SUBNET_PREFIX}.${host}" &
+    inspect_host "${SUBNET_PREFIX}.${host}" &
   done
 
   wait

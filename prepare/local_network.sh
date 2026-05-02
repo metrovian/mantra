@@ -1,5 +1,5 @@
 prepare_local_network_context() {
-  detect_network
+  inspect_network
 
   if [[ -z "${GATEWAY:-}" || -z "${IFACE:-}" || -z "${ME:-}" ]]; then
     echo "could not detect gateway or local IPv4 address." >&2
