@@ -25,8 +25,10 @@ fi
 
 source "$ROOT_DIR/prepare/local_network.sh"
 source "$ROOT_DIR/check/local_network.sh"
+source "$ROOT_DIR/check/dns.sh"
 source "$ROOT_DIR/check/subnet_neighbors.sh"
 
 prepare_local_network_context
 check_local_network
+check_dns
 check_subnet_neighbors
