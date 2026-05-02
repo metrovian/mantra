@@ -1,32 +1,26 @@
 check_dns() {
   local target
-  local answer
-  local answer_count
+  local answers
   local answer_index
   local answer_value
   local dns_index
   local dns_server
   local dns_found
   local latency_ms
-  local resolver_count
   local start_ms
   local end_ms
 
   target="naver.com"
-  resolver_count="$(inspect_dns_servers | awk 'NF' | wc -l | tr -d ' ')"
   dns_index=1
   dns_found=0
   start_ms="$(dns_now_ms)"
-  answer="$(resolve_domain "$target")"
+  answers="$(resolve_domain_answers "$target")"
   end_ms="$(dns_now_ms)"
   latency_ms="$((end_ms - start_ms))"
-  answer_count="$(resolve_domain_answers "$target" | awk 'NF' | wc -l | tr -d ' ')"
 
   pair_reset
   pair_set_title "DNS"
   pair_add "target" "$target"
-  pair_add "resolver" "$resolver_count"
-  pair_add "answer" "$answer_count"
   pair_add "latency" "${latency_ms} ms"
 
   while IFS= read -r dns_server; do
@@ -41,7 +35,7 @@ check_dns() {
     pair_add "dns" "-"
   fi
 
-  if [[ "${answer_count:-0}" -eq 0 ]]; then
+  if [[ -z "$answers" ]]; then
     pair_add "answer1" "-"
   else
     answer_index=1
@@ -50,7 +44,7 @@ check_dns() {
       [[ -z "$answer_value" ]] && continue
       pair_add "answer${answer_index}" "$answer_value"
       answer_index=$((answer_index + 1))
-    done < <(resolve_domain_answers "$target")
+    done <<<"$answers"
   fi
 
   pair_print
