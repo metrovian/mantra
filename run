@@ -14,6 +14,7 @@ source "$ROOT_DIR/abstract/$OS/inspect.sh"
 source "$ROOT_DIR/abstract/$OS/lookup.sh"
 source "$ROOT_DIR/abstract/$OS/resolve.sh"
 
+source "$ROOT_DIR/abstract/network.sh"
 source "$ROOT_DIR/abstract/render.sh"
 source "$ROOT_DIR/abstract/table.sh"
 source "$ROOT_DIR/prepare/local_network.sh"

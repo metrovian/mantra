@@ -1,7 +1,4 @@
 check_subnet_neighbors() {
-  local host_int
-  local first_int
-  local last_int
   local ip
   local mac
   local company
@@ -10,17 +7,13 @@ check_subnet_neighbors() {
   table_reset
   table_set_headers "IP" "MAC" "company" "hostname"
 
-  first_int="$(prepare_ip_to_int "$SUBNET_FIRST")"
-  last_int="$(prepare_ip_to_int "$SUBNET_LAST")"
-
-  for ((host_int = first_int; host_int <= last_int; host_int++)); do
-    inspect_host "$(prepare_int_to_ip "$host_int")" &
-  done
+  while IFS= read -r ip; do
+    inspect_host "$ip" &
+  done < <(network_subnet_hosts)
 
   wait
 
-  for ((host_int = first_int; host_int <= last_int; host_int++)); do
-    ip="$(prepare_int_to_ip "$host_int")"
+  while IFS= read -r ip; do
     mac="$(lookup_mac "$ip")"
 
     if [[ -n "${mac:-}" && "$mac" != "(incomplete)" ]]; then
@@ -28,7 +21,7 @@ check_subnet_neighbors() {
       hostname="$(resolve_hostname "$ip")"
       table_add_row "$ip" "$mac" "${company:--}" "${hostname:--}"
     fi
-  done
+  done < <(network_subnet_hosts)
 
   table_print
 }
