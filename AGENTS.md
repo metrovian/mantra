@@ -25,7 +25,7 @@ Every change should support that direction. Prefer simple commands, clear output
 
 - `run` is the user-facing entry point
 - common flow should stay in `run`
-- platform-specific helper functions belong in platform files
+- platform-specific helper functions belong in abstract files
 - macOS and Linux are the primary targets
 
 ## file ownership

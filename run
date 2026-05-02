@@ -11,21 +11,16 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
 fi
 
 if [[ "$OS" == "Linux" ]]; then
-  # shellcheck source=/dev/null
-  source "$ROOT_DIR/platform/linux/local.sh"
+  source "$ROOT_DIR/abstract/linux/local.sh"
 elif [[ "$OS" == "Darwin" ]]; then
-  # shellcheck source=/dev/null
-  source "$ROOT_DIR/platform/macos/local.sh"
+  source "$ROOT_DIR/abstract/macos/local.sh"
 else
   echo "unsupported OS: $OS" >&2
   exit 1
 fi
 
-# shellcheck source=/dev/null
 source "$ROOT_DIR/prepare/local_network.sh"
-# shellcheck source=/dev/null
 source "$ROOT_DIR/check/local_network.sh"
-# shellcheck source=/dev/null
 source "$ROOT_DIR/check/subnet_neighbors.sh"
 
 prepare_local_network_context
