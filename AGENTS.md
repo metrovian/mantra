@@ -46,6 +46,28 @@ Every change should support that direction. Prefer simple commands, clear output
 - readability matters more than clever formatting
 - prefer keeping lines within 88 characters when practical
 
+## output formatters
+
+- use `pair` for titled key-value blocks such as `LOCAL` and `DNS`
+- use `table` for row-based outputs with shared columns such as neighbor inventories
+- do not hand-write spacing for these outputs inside check files
+- let `pair` and `table` calculate spacing and separator width automatically
+- keep check files focused on values and order, not on presentation details
+
+### pair usage
+
+- call `pair_reset`
+- call `pair_set_title` once
+- call `pair_add` for each key-value line
+- call `pair_print` at the end
+
+### table usage
+
+- call `table_reset`
+- call `table_set_headers` once
+- call `table_add_row` for each row
+- call `table_print` at the end
+
 ## commit rules
 
 - make commits in small, meaningful units
