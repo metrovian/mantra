@@ -23,8 +23,8 @@ else
   exit 1
 fi
 
-source "$ROOT_DIR/format/render.sh"
-source "$ROOT_DIR/format/table.sh"
+source "$ROOT_DIR/abstract/render.sh"
+source "$ROOT_DIR/abstract/table.sh"
 source "$ROOT_DIR/prepare/local_network.sh"
 source "$ROOT_DIR/check/local_network.sh"
 source "$ROOT_DIR/check/dns.sh"
