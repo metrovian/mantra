@@ -2,10 +2,6 @@ lookup_mac() {
   ip neigh show "$1" | awk '/lladdr/ {print $5; exit}'
 }
 
-lookup_hostname() {
-  getent hosts "$1" 2>/dev/null | awk 'NR==1 {print $2; exit}' || true
-}
-
 lookup_company() {
   local prefix
 

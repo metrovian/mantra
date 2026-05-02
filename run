@@ -13,9 +13,11 @@ fi
 if [[ "$OS" == "Linux" ]]; then
   source "$ROOT_DIR/abstract/linux/detect.sh"
   source "$ROOT_DIR/abstract/linux/lookup.sh"
+  source "$ROOT_DIR/abstract/linux/resolve.sh"
 elif [[ "$OS" == "Darwin" ]]; then
   source "$ROOT_DIR/abstract/macos/detect.sh"
   source "$ROOT_DIR/abstract/macos/lookup.sh"
+  source "$ROOT_DIR/abstract/macos/resolve.sh"
 else
   echo "unsupported OS: $OS" >&2
   exit 1

@@ -18,8 +18,8 @@ check_subnet_neighbors() {
     mac="$(lookup_mac "$ip")"
 
     if [[ -n "${mac:-}" && "$mac" != "(incomplete)" ]]; then
-      hostname="$(lookup_hostname "$ip")"
       company="$(lookup_company "$mac")"
+      hostname="$(resolve_hostname "$ip")"
       printf "%-15s %-17s %-30s %s\n" \
         "$ip" "$mac" "${company:--}" "${hostname:--}"
     fi

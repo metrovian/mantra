@@ -2,13 +2,6 @@ lookup_mac() {
   arp -n "$1" | awk '/ at / {print $4; exit}'
 }
 
-lookup_hostname() {
-  host "$1" 2>/dev/null \
-    | awk '/domain name pointer/ {print $5; exit}' \
-    | sed 's/\.$//' \
-    || true
-}
-
 lookup_company() {
   local prefix
   local oui_file
