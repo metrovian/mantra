@@ -20,7 +20,13 @@ inspect_host() {
 
 inspect_dns_servers() {
   scutil --dns 2>/dev/null \
-    | awk '/nameserver\[[0-9]+\]/ {print $3}'
+    | awk '
+        /nameserver\[[0-9]+\]/ {
+          if (!seen[$3]++) {
+            print $3
+          }
+        }
+      '
 }
 
 inspect_netmask_prefix() {
