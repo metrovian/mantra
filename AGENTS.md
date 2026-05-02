@@ -28,6 +28,13 @@ Every change should support that direction. Prefer simple commands, clear output
 - platform-specific helper functions belong in abstract files
 - macOS and Linux are the primary targets
 
+## abstract layers
+
+- `inspect` is for current state, configured values, and reachability
+- `lookup` is for local table or data lookups such as `MAC` and vendor
+- `resolve` is for name and address resolution such as `PTR` and `A` records
+- keep these boundaries explicit when adding new helper functions
+
 ## file ownership
 
 - do not modify `README.md` unless the user explicitly asks
