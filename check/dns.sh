@@ -22,11 +22,11 @@ check_dns() {
   latency_ms="$((end_ms - start_ms))"
   answer_count="$(resolve_domain_answers "$target" | awk 'NF' | wc -l | tr -d ' ')"
 
-  print_section "DNS"
+  render_section "DNS"
 
   echo "test     $target"
   echo "resolver $resolver_count"
-  echo "answers  $answer_count"
+  echo "answer   $answer_count"
   echo "latency  ${latency_ms} ms"
 
   while IFS= read -r dns_server; do
