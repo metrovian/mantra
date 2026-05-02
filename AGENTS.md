@@ -23,8 +23,8 @@ Every change should support that direction. Prefer simple commands, clear output
 
 ## current command direction
 
-- `check` is the user-facing entry point
-- common flow should stay in `check`
+- `run` is the user-facing entry point
+- common flow should stay in `run`
 - platform-specific helper functions belong in platform files
 - macOS and Linux are the primary targets
 
