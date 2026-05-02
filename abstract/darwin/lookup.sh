@@ -34,26 +34,14 @@ lookup_company() {
   local oui_file
   local company
 
-  prefix="$(tr '[:lower:]' '[:upper:]' <<<"$1" | awk -F: '{print $1 $2 $3}')"
+  prefix="$(lookup_company_prefix "$1")"
 
   for oui_file in \
     /usr/share/ieee-data/oui.txt \
     /opt/homebrew/share/ieee-data/oui.txt \
     /usr/local/share/ieee-data/oui.txt; do
     if [[ -f "$oui_file" ]]; then
-      company="$(
-        awk -v prefix="$prefix" '
-        $1 == prefix && $2 == "(base" && $3 == "16)" {
-          $1 = ""
-          $2 = ""
-          $3 = ""
-          sub(/^[ \t]+/, "")
-          sub(/\r$/, "")
-          print
-          exit
-        }
-      ' "$oui_file"
-      )"
+      company="$(lookup_company_from_oui_file "$prefix" "$oui_file")"
 
       if [[ -n "$company" ]]; then
         echo "$company"

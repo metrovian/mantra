@@ -4,22 +4,17 @@ lookup_mac() {
 
 lookup_company() {
   local prefix
+  local company
 
-  prefix="$(tr '[:lower:]' '[:upper:]' <<<"$1" | awk -F: '{print $1 $2 $3}')"
+  prefix="$(lookup_company_prefix "$1")"
 
   if [[ -f /usr/share/ieee-data/oui.txt ]]; then
-    awk -v prefix="$prefix" '
-      $1 == prefix && $2 == "(base" && $3 == "16)" {
-        $1 = ""
-        $2 = ""
-        $3 = ""
-        sub(/^[ \t]+/, "")
-        sub(/\r$/, "")
-        print
-        exit
-      }
-    ' /usr/share/ieee-data/oui.txt
-    return
+    company="$(lookup_company_from_oui_file "$prefix" /usr/share/ieee-data/oui.txt)"
+
+    if [[ -n "$company" ]]; then
+      echo "$company"
+      return
+    fi
   fi
 
   echo "-"

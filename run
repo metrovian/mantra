@@ -19,6 +19,7 @@ run_load_platform_modules() {
 }
 
 run_load_common_modules() {
+  source "$ROOT_DIR/abstract/lookup.sh"
   source "$ROOT_DIR/abstract/network.sh"
   source "$ROOT_DIR/abstract/pair.sh"
   source "$ROOT_DIR/abstract/table.sh"
