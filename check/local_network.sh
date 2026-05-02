@@ -4,7 +4,7 @@ check_local_network() {
   echo "iface   $IFACE"
   echo "me      $ME"
   echo "gateway $GATEWAY"
-  echo "subnet  ${SUBNET_PREFIX}.0/24"
+  echo "subnet  ${SUBNET}/${PREFIX}"
 
   echo
 }

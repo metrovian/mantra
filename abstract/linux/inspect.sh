@@ -5,6 +5,10 @@ inspect_network() {
     ip -o -f inet addr show dev "$IFACE" scope global \
       | awk 'NR==1 {split($4, parts, "/"); print parts[1]}'
   )"
+  PREFIX="$(
+    ip -o -f inet addr show dev "$IFACE" scope global \
+      | awk 'NR==1 {split($4, parts, "/"); print parts[2]}'
+  )"
 }
 
 inspect_host() {
