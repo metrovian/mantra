@@ -66,16 +66,15 @@ table_print() {
   for ((index = 0; index < TABLE_COLUMN_COUNT; index++)); do
     if ((index < TABLE_COLUMN_COUNT - 1)); then
       format+="%-${TABLE_WIDTHS[$index]}s "
-      header_line+="${TABLE_HEADERS[$index]} "
       separator_line+="$(printf '%*s' "${TABLE_WIDTHS[$index]}" '' | tr ' ' '-') "
     else
       format+="%s"
-      header_line+="${TABLE_HEADERS[$index]}"
       separator_line+="$(printf '%*s' "${TABLE_WIDTHS[$index]}" '' | tr ' ' '-')"
     fi
   done
 
   format+=$'\n'
+  separator_line+="-"
 
   fields=("${TABLE_HEADERS[@]}")
   printf "$format" "${fields[@]}"

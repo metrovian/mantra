@@ -55,6 +55,8 @@ pair_print() {
     separator_width=$line_width
   fi
 
+  separator_width=$((separator_width + 1))
+
   echo "$PAIR_TITLE"
   printf '%*s\n' "$separator_width" '' | tr ' ' '-'
 
