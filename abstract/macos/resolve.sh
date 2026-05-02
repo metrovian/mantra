@@ -1,4 +1,9 @@
 resolve_hostname() {
+  if command -v dig >/dev/null 2>&1; then
+    dig +short -x "$1" @"$GATEWAY" 2>/dev/null | sed 's/\.$//' | awk 'NR==1 {print; exit}'
+    return
+  fi
+
   host "$1" 2>/dev/null \
     | awk '/domain name pointer/ {print $5; exit}' \
     | sed 's/\.$//' \
