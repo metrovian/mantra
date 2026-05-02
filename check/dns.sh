@@ -10,7 +10,7 @@ check_dns() {
   local end_ms
 
   target="naver.com"
-  resolver_count="$(resolve_dns_servers | awk 'NF' | wc -l | tr -d ' ')"
+  resolver_count="$(inspect_dns_servers | awk 'NF' | wc -l | tr -d ' ')"
   start_ms="$(dns_now_ms)"
   answer="$(resolve_domain "$target")"
   end_ms="$(dns_now_ms)"

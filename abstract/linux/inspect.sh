@@ -10,3 +10,17 @@ inspect_network() {
 inspect_host() {
   ping -c 1 -W 1 "$1" >/dev/null 2>&1 || true
 }
+
+inspect_dns_servers() {
+  if command -v resolvectl >/dev/null 2>&1; then
+    resolvectl dns "$IFACE" 2>/dev/null \
+      | awk '{
+          for (i = 4; i <= NF; i++) {
+            print $i
+          }
+        }'
+    return
+  fi
+
+  awk '/^nameserver / {print $2}' /etc/resolv.conf 2>/dev/null || true
+}

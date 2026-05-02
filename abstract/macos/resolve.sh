@@ -10,11 +10,6 @@ resolve_hostname() {
     || true
 }
 
-resolve_dns_servers() {
-  scutil --dns 2>/dev/null \
-    | awk '/nameserver\[[0-9]+\]/ {print $3}'
-}
-
 resolve_domain() {
   resolve_domain_answers "$1" | awk 'NR==1 {print; exit}' || true
 }

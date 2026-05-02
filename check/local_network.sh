@@ -21,7 +21,7 @@ check_local_network() {
     echo "dns${dns_index}    $dns_server"
 
     dns_index=$((dns_index + 1))
-  done < <(resolve_dns_servers)
+  done < <(inspect_dns_servers)
 
   if [[ "$dns_found" -eq 0 ]]; then
     echo "dns     -"

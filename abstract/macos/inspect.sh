@@ -10,3 +10,8 @@ inspect_network() {
 inspect_host() {
   ping -c 1 -W 1000 "$1" >/dev/null 2>&1 || true
 }
+
+inspect_dns_servers() {
+  scutil --dns 2>/dev/null \
+    | awk '/nameserver\[[0-9]+\]/ {print $3}'
+}
