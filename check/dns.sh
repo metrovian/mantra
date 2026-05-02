@@ -22,38 +22,38 @@ check_dns() {
   latency_ms="$((end_ms - start_ms))"
   answer_count="$(resolve_domain_answers "$target" | awk 'NF' | wc -l | tr -d ' ')"
 
-  render_section "DNS"
-
-  echo "test     $target"
-  echo "resolver $resolver_count"
-  echo "answer   $answer_count"
-  echo "latency  ${latency_ms} ms"
+  pair_reset
+  pair_set_title "DNS"
+  pair_add "target" "$target"
+  pair_add "resolver" "$resolver_count"
+  pair_add "answer" "$answer_count"
+  pair_add "latency" "${latency_ms} ms"
 
   while IFS= read -r dns_server; do
     [[ -z "$dns_server" ]] && continue
 
     dns_found=1
-    echo "dns${dns_index}     $dns_server"
+    pair_add "dns${dns_index}" "$dns_server"
     dns_index=$((dns_index + 1))
   done < <(inspect_dns_servers)
 
   if [[ "$dns_found" -eq 0 ]]; then
-    echo "dns      -"
+    pair_add "dns" "-"
   fi
 
   if [[ "${answer_count:-0}" -eq 0 ]]; then
-    echo "answer    -"
+    pair_add "answer1" "-"
   else
     answer_index=1
 
     while IFS= read -r answer_value; do
       [[ -z "$answer_value" ]] && continue
-      echo "answer${answer_index}  $answer_value"
+      pair_add "answer${answer_index}" "$answer_value"
       answer_index=$((answer_index + 1))
     done < <(resolve_domain_answers "$target")
   fi
 
-  echo
+  pair_print
 }
 
 dns_now_ms() {

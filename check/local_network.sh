@@ -1,10 +1,10 @@
 check_local_network() {
-  render_section "LOCAL"
-  echo "time    $(date '+%Y-%m-%d %H:%M:%S %Z')"
-  echo "iface   $IFACE"
-  echo "me      $ME"
-  echo "gateway $GATEWAY"
-  echo "subnet  ${SUBNET}/${PREFIX}"
-
-  echo
+  pair_reset
+  pair_set_title "LOCAL"
+  pair_add "time" "$(date '+%Y-%m-%d %H:%M:%S %Z')"
+  pair_add "iface" "$IFACE"
+  pair_add "me" "$ME"
+  pair_add "gateway" "$GATEWAY"
+  pair_add "subnet" "${SUBNET}/${PREFIX}"
+  pair_print
 }
