@@ -17,5 +17,12 @@ resolve_dns_servers() {
 }
 
 resolve_domain() {
-  getent ahostsv4 "$1" 2>/dev/null | awk 'NR==1 {print $1; exit}' || true
+  resolve_domain_answers "$1" | awk 'NR==1 {print; exit}' || true
+}
+
+resolve_domain_answers() {
+  getent ahostsv4 "$1" 2>/dev/null \
+    | awk '{print $1}' \
+    | awk '!seen[$0]++' \
+    || true
 }

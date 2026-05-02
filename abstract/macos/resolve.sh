@@ -11,9 +11,24 @@ resolve_dns_servers() {
 }
 
 resolve_domain() {
-  dscacheutil -q host -a name "$1" 2>/dev/null \
-    | awk '/^ip_address: / {print $2; exit}' \
-    || host "$1" 2>/dev/null \
-      | awk '/has address/ {print $4; exit}' \
-      || true
+  resolve_domain_answers "$1" | awk 'NR==1 {print; exit}' || true
+}
+
+resolve_domain_answers() {
+  local answers
+
+  answers="$(
+    dscacheutil -q host -a name "$1" 2>/dev/null \
+      | awk '/^ip_address: / {print $2}'
+  )"
+
+  if [[ -n "$answers" ]]; then
+    awk '!seen[$0]++' <<<"$answers"
+    return
+  fi
+
+  host "$1" 2>/dev/null \
+    | awk '/has address/ {print $4}' \
+    | awk '!seen[$0]++' \
+    || true
 }
