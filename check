@@ -30,6 +30,7 @@ fi
 
 SUBNET_PREFIX="$(awk -F. '{print $1 "." $2 "." $3}' <<<"$GATEWAY")"
 
+echo "time      $(date '+%Y-%m-%d %H:%M:%S %Z')"
 echo "interface $IFACE"
 echo "me        $LOCAL_IP"
 echo "gateway   $GATEWAY"
