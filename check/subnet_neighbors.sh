@@ -1,11 +1,6 @@
 check_subnet_neighbors() {
-  printf "%-15s %-17s %-30s %s\n" \
-    "IP" "MAC" "company" "hostname"
-  printf "%-15s %-17s %-30s %s\n" \
-    "---------------" \
-    "-----------------" \
-    "------------------------------" \
-    "--------------------------------"
+  table_reset
+  table_set_headers "IP" "MAC" "company" "hostname"
 
   for host in $(seq 1 254); do
     inspect_host "${SUBNET_PREFIX}.${host}" &
@@ -20,8 +15,9 @@ check_subnet_neighbors() {
     if [[ -n "${mac:-}" && "$mac" != "(incomplete)" ]]; then
       company="$(lookup_company "$mac")"
       hostname="$(resolve_hostname "$ip")"
-      printf "%-15s %-17s %-30s %s\n" \
-        "$ip" "$mac" "${company:--}" "${hostname:--}"
+      table_add_row "$ip" "$mac" "${company:--}" "${hostname:--}"
     fi
   done
+
+  table_print
 }
