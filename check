@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
+OS="$(uname -s)"
+
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  echo "usage: check"
+  exit 0
+fi
+
+if [[ "$OS" == "Linux" ]]; then
+  # shellcheck source=/dev/null
+  . "$ROOT_DIR/platform/linux.sh"
+elif [[ "$OS" == "Darwin" ]]; then
+  # shellcheck source=/dev/null
+  . "$ROOT_DIR/platform/macos.sh"
+else
+  echo "unsupported OS: $OS" >&2
+  exit 1
+fi
+
+detect_network
+
+if [[ -z "${GATEWAY:-}" || -z "${IFACE:-}" || -z "${LOCAL_IP:-}" ]]; then
+  echo "could not detect gateway or local IPv4 address." >&2
+  exit 1
+fi
+
+SUBNET_PREFIX="$(awk -F. '{print $1 "." $2 "." $3}' <<<"$GATEWAY")"
+
+echo "interface $IFACE"
+echo "gateway   $GATEWAY"
+echo "local IP  $LOCAL_IP"
+echo "subnet    ${SUBNET_PREFIX}.0/24"
+echo
+
+for host in $(seq 1 254); do
+  ping_host "${SUBNET_PREFIX}.${host}" &
+done
+
+wait
+
+printf "%-15s %-17s\n" "IP" "MAC"
+printf "%-15s %-17s\n" "---------------" "-----------------"
+
+for host in $(seq 1 254); do
+  ip="${SUBNET_PREFIX}.${host}"
+  mac="$(lookup_mac "$ip")"
+
+  if [[ -n "${mac:-}" && "$mac" != "(incomplete)" ]]; then
+    printf "%-15s %-17s\n" "$ip" "$mac"
+  fi
+done
