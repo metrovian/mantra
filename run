@@ -5,24 +5,37 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 
-if [[ ! -d "$ROOT_DIR/abstract/$OS" ]]; then
-  echo "unsupported OS: $OS" >&2
-  exit 1
-fi
+run_validate_os() {
+  if [[ ! -d "$ROOT_DIR/abstract/$OS" ]]; then
+    echo "unsupported OS: $OS" >&2
+    exit 1
+  fi
+}
 
-source "$ROOT_DIR/abstract/$OS/inspect.sh"
-source "$ROOT_DIR/abstract/$OS/lookup.sh"
-source "$ROOT_DIR/abstract/$OS/resolve.sh"
+run_load_platform_modules() {
+  source "$ROOT_DIR/abstract/$OS/inspect.sh"
+  source "$ROOT_DIR/abstract/$OS/lookup.sh"
+  source "$ROOT_DIR/abstract/$OS/resolve.sh"
+}
 
-source "$ROOT_DIR/abstract/network.sh"
-source "$ROOT_DIR/abstract/pair.sh"
-source "$ROOT_DIR/abstract/table.sh"
-source "$ROOT_DIR/prepare/local_network.sh"
-source "$ROOT_DIR/check/local_network.sh"
-source "$ROOT_DIR/check/dns.sh"
-source "$ROOT_DIR/check/subnet_neighbors.sh"
+run_load_common_modules() {
+  source "$ROOT_DIR/abstract/network.sh"
+  source "$ROOT_DIR/abstract/pair.sh"
+  source "$ROOT_DIR/abstract/table.sh"
+  source "$ROOT_DIR/prepare/local_network.sh"
+  source "$ROOT_DIR/check/local_network.sh"
+  source "$ROOT_DIR/check/dns.sh"
+  source "$ROOT_DIR/check/subnet_neighbors.sh"
+}
 
-prepare_local_network_context
-check_local_network
-check_dns
-check_subnet_neighbors
+run_checks() {
+  prepare_local_network_context
+  check_local_network
+  check_dns
+  check_subnet_neighbors
+}
+
+run_validate_os
+run_load_platform_modules
+run_load_common_modules
+run_checks
