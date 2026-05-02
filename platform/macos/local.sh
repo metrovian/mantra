@@ -1,7 +1,10 @@
 detect_network() {
   GATEWAY="$(route -n get default | awk '/gateway:/ {print $2}')"
   IFACE="$(route -n get default | awk '/interface:/ {print $2}')"
-  LOCAL_IP="$(ifconfig "$IFACE" | awk '/inet / && $2 != "127.0.0.1" {print $2; exit}')"
+  LOCAL_IP="$(
+    ifconfig "$IFACE" \
+      | awk '/inet / && $2 != "127.0.0.1" {print $2; exit}'
+  )"
 }
 
 ping_host() {
@@ -13,7 +16,10 @@ lookup_mac() {
 }
 
 lookup_hostname() {
-  host "$1" 2>/dev/null | awk '/domain name pointer/ {print $5; exit}' | sed 's/\.$//' || true
+  host "$1" 2>/dev/null \
+    | awk '/domain name pointer/ {print $5; exit}' \
+    | sed 's/\.$//' \
+    || true
 }
 
 lookup_company() {
@@ -22,9 +28,22 @@ lookup_company() {
 
   prefix="$(tr '[:lower:]' '[:upper:]' <<<"$1" | awk -F: '{print $1 $2 $3}')"
 
-  for oui_file in /usr/share/ieee-data/oui.txt /opt/homebrew/share/ieee-data/oui.txt /usr/local/share/ieee-data/oui.txt; do
+  for oui_file in \
+    /usr/share/ieee-data/oui.txt \
+    /opt/homebrew/share/ieee-data/oui.txt \
+    /usr/local/share/ieee-data/oui.txt; do
     if [[ -f "$oui_file" ]]; then
-      awk -v prefix="$prefix" '$1 == prefix && $2 == "(base" && $3 == "16)" { $1=""; $2=""; $3=""; sub(/^[ \t]+/, ""); sub(/\r$/, ""); print; exit }' "$oui_file"
+      awk -v prefix="$prefix" '
+        $1 == prefix && $2 == "(base" && $3 == "16)" {
+          $1 = ""
+          $2 = ""
+          $3 = ""
+          sub(/^[ \t]+/, "")
+          sub(/\r$/, "")
+          print
+          exit
+        }
+      ' "$oui_file"
       return
     fi
   done

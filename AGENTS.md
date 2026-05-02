@@ -37,6 +37,7 @@ Every change should support that direction. Prefer simple commands, clear output
 
 - keep user-facing log messages in lowercase unless the term is a standard acronym such as `OS`, `IP`, or `MAC`
 - readability matters more than clever formatting
+- prefer keeping lines within 88 characters when practical
 
 ## commit rules
 
