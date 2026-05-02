@@ -32,6 +32,7 @@ lookup_mac() {
 lookup_company() {
   local prefix
   local oui_file
+  local company
 
   prefix="$(tr '[:lower:]' '[:upper:]' <<<"$1" | awk -F: '{print $1 $2 $3}')"
 
@@ -40,7 +41,8 @@ lookup_company() {
     /opt/homebrew/share/ieee-data/oui.txt \
     /usr/local/share/ieee-data/oui.txt; do
     if [[ -f "$oui_file" ]]; then
-      awk -v prefix="$prefix" '
+      company="$(
+        awk -v prefix="$prefix" '
         $1 == prefix && $2 == "(base" && $3 == "16)" {
           $1 = ""
           $2 = ""
@@ -51,7 +53,45 @@ lookup_company() {
           exit
         }
       ' "$oui_file"
-      return
+      )"
+
+      if [[ -n "$company" ]]; then
+        echo "$company"
+        return
+      fi
+    fi
+  done
+
+  for oui_file in \
+    /opt/homebrew/etc/wireshark/manuf \
+    /usr/local/etc/wireshark/manuf \
+    /Applications/Wireshark.app/Contents/Resources/share/wireshark/manuf; do
+    if [[ -f "$oui_file" ]]; then
+      company="$(
+        awk -v prefix="$prefix" '
+          BEGIN {
+            needle = substr(prefix, 1, 2) ":" substr(prefix, 3, 2) ":" substr(prefix, 5, 2)
+          }
+          $1 == needle {
+            if ($3 != "") {
+              $1 = ""
+              $2 = ""
+              sub(/^[ \t]+/, "")
+              sub(/[ \t]+#.*$/, "")
+              print
+              exit
+            }
+
+            print $2
+            exit
+          }
+        ' "$oui_file"
+      )"
+
+      if [[ -n "$company" ]]; then
+        echo "$company"
+        return
+      fi
     fi
   done
 
