@@ -27,3 +27,29 @@ inspect_dns_servers() {
   fi
   awk '/^nameserver / {print $2}' /etc/resolv.conf 2>/dev/null || true
 }
+
+lookup_mac() {
+  ip neigh show "$1" | awk '/lladdr/ {print $5; exit}' | awk 'NR==1 {print; exit}'
+}
+
+lookup_company() {
+  local company
+  company="$(lookup_company_from_oui_files "$1" /usr/share/ieee-data/oui.txt)"
+  [[ -n "$company" ]] && { echo "$company"; return; }
+  echo "-"
+}
+
+resolve_hostname() {
+  if command -v dig >/dev/null 2>&1; then
+    dig +short -x "$1" @"$GATEWAY" 2>/dev/null | sed 's/\.$//' | awk 'NR==1 {print; exit}'
+    return
+  fi
+  getent hosts "$1" 2>/dev/null | awk 'NR==1 {print $2; exit}' || true
+}
+
+resolve_domain_answers() {
+  getent ahostsv4 "$1" 2>/dev/null \
+    | awk '{print $1}' \
+    | awk '!seen[$0]++' \
+    || true
+}
