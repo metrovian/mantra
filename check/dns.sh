@@ -15,7 +15,6 @@ check_dns() {
   fi
   pair_reset
   pair_set_title "DNS"
-  pair_add "target" "$target"
   pair_add "latency" "$latency"
   if ((${#dns_servers[@]} == 0)); then
     pair_add "dns" "-"
