@@ -7,10 +7,6 @@ resolve_hostname() {
   getent hosts "$1" 2>/dev/null | awk 'NR==1 {print $2; exit}' || true
 }
 
-resolve_domain() {
-  resolve_domain_answers "$1" | awk 'NR==1 {print; exit}' || true
-}
-
 resolve_domain_answers() {
   getent ahostsv4 "$1" 2>/dev/null \
     | awk '{print $1}' \
