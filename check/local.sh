@@ -1,4 +1,4 @@
-check_local_network() {
+check_local() {
   pair_reset
   pair_set_title "LOCAL"
   pair_add "time" "$(date '+%Y-%m-%d %H:%M:%S %Z')"

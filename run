@@ -23,13 +23,13 @@ source_modules \
   abstract/resolve.sh \
   abstract/pair.sh \
   abstract/table.sh \
-  prepare/local_network.sh \
-  check/local_network.sh \
+  prepare/local.sh \
+  check/local.sh \
   check/gateway.sh \
   check/dns.sh \
   check/subnet_neighbors.sh
-prepare_local_network_context
-check_local_network
+prepare_local_context
+check_local
 check_gateway
 check_dns
 check_subnet_neighbors
