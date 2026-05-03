@@ -1,10 +1,7 @@
 check_dns() {
   local -a answers=()
   local -a dns_servers=()
-  local latency_ms
   local latency
-  local start_ms
-  local end_ms
   local index
   local dns_index
   local answer_index
@@ -13,13 +10,8 @@ check_dns() {
   mapfile -t answers < <(resolve_domain_answers "$target")
   mapfile -t dns_servers < <(inspect_dns_servers)
   latency="-"
-  if ((${#answers[@]} > 0 && ${#dns_servers[@]} > 0)); then
-    start_ms="$(dns_now_ms)"
-    if inspect_host_reachable "${dns_servers[0]}" >/dev/null 2>&1; then
-      end_ms="$(dns_now_ms)"
-      latency_ms="$((end_ms - start_ms))"
-      latency="${latency_ms} ms"
-    fi
+  if ((${#answers[@]} > 0)); then
+    latency="$(dns_ping_latency "$target")"
   fi
   pair_reset
   pair_set_title "DNS"
@@ -48,10 +40,8 @@ check_dns() {
   pair_print
 }
 
-dns_now_ms() {
-  if command -v perl >/dev/null 2>&1; then
-    perl -MTime::HiRes=time -e 'printf "%.0f\n", time() * 1000'
-    return
-  fi
-  date +%s000
+dns_ping_latency() {
+  local ping_output
+  ping_output="$(inspect_host_reachable "$1" 2>/dev/null || true)"
+  awk -F'time=' 'NF > 1 {split($2, parts, /[[:space:]]|ms/); print parts[1] " ms"; exit}' <<<"$ping_output"
 }

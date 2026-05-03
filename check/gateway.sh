@@ -1,19 +1,9 @@
 check_gateway() {
   local latency
-  local latency_ms
-  local start_ms
-  local end_ms
   local mac
   local company
   local hostname
-  start_ms="$(dns_now_ms)"
-  if inspect_host_reachable "$GATEWAY" >/dev/null 2>&1; then
-    end_ms="$(dns_now_ms)"
-    latency_ms="$((end_ms - start_ms))"
-    latency="${latency_ms} ms"
-  else
-    latency="-"
-  fi
+  latency="$(gateway_ping_latency "$GATEWAY")"
   mac="$(lookup_mac "$GATEWAY")"
   company="-"
   [[ -n "${mac:-}" && "$mac" != "(incomplete)" ]] && company="$(lookup_company "$mac")"
@@ -26,4 +16,10 @@ check_gateway() {
   pair_add "company" "${company:--}"
   pair_add "hostname" "${hostname:--}"
   pair_print
+}
+
+gateway_ping_latency() {
+  local ping_output
+  ping_output="$(inspect_host_reachable "$1" 2>/dev/null || true)"
+  awk -F'time=' 'NF > 1 {split($2, parts, /[[:space:]]|ms/); print parts[1] " ms"; exit}' <<<"$ping_output"
 }
