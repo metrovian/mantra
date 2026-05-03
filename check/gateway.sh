@@ -21,5 +21,5 @@ check_gateway() {
 gateway_ping_latency() {
   local ping_output
   ping_output="$(inspect_host_reachable "$1" 2>/dev/null || true)"
-  awk -F'time=' 'NF > 1 {split($2, parts, /[[:space:]]|ms/); print parts[1] " ms"; exit}' <<<"$ping_output"
+  awk -F'time=' 'NF > 1 {split($2, parts, /[[:space:]]|ms/); printf "%.0f ms\n", parts[1]; exit}' <<<"$ping_output"
 }
