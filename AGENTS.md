@@ -27,15 +27,21 @@ Every change should support that direction. Prefer simple commands, clear output
 
 - `run` is the user-facing entry point
 - common flow should stay in `run`
-- platform-specific helper functions belong in abstract files
+- platform-specific helper functions belong in `abstract/<os>.sh`
 - macOS and Linux are the primary targets
+- load the platform module before common helpers and checks
+- keep the check order aligned with the diagnostic flow:
+  `LOCAL`, `GATEWAY`, `DNS`, `subnet neighbors`
 
 ## abstract layers
 
-- `inspect` is for current state, configured values, and reachability
+- `inspect` is for current state, configured values, and active probes such as ping reachability and DNS server discovery
 - `lookup` is for local table or data lookups such as `MAC` and vendor
 - `resolve` is for name and address resolution such as `PTR` and `A` records
+- `network` is for shared IPv4 subnet math and host range iteration
 - keep these boundaries explicit when adding new helper functions
+- keep these boundaries as function groups inside each platform module even when they share one file
+- prefer putting OS-specific ping wrappers and probe commands in `inspect` rather than in check files
 
 ## file ownership
 
@@ -47,6 +53,10 @@ Every change should support that direction. Prefer simple commands, clear output
 - keep user-facing log messages in lowercase unless the term is a standard acronym such as `OS`, `IP`, or `MAC`
 - readability matters more than clever formatting
 - prefer keeping lines within 88 characters when practical
+- prefer short names such as `local` over longer forms such as
+  `local_network` when the meaning is already clear
+- prefer measured values over boolean status when they help diagnostics more
+  directly, such as `latency` over `reachable`
 
 ## output formatters
 
@@ -55,6 +65,10 @@ Every change should support that direction. Prefer simple commands, clear output
 - do not hand-write spacing for these outputs inside check files
 - let `pair` and `table` calculate spacing and separator width automatically
 - keep check files focused on values and order, not on presentation details
+- keep pair blocks ordered from the most diagnostic field to the most
+  identifying field when practical
+- for latency fields, prefer direct ping RTT parsed from command output instead
+  of whole-command wall time
 
 ### pair usage
 
