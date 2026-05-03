@@ -5,15 +5,12 @@ lookup_company_prefix() {
 lookup_format_mac() {
   local mac
   local -a octets
-
   mac="$1"
   IFS=: read -r -a octets <<<"$mac"
-
   if ((${#octets[@]} != 6)); then
     echo "$mac"
     return
   fi
-
   printf '%02x:%02x:%02x:%02x:%02x:%02x\n' \
     "$((16#${octets[0]}))" \
     "$((16#${octets[1]}))" \
@@ -26,10 +23,8 @@ lookup_format_mac() {
 lookup_company_from_oui_file() {
   local prefix
   local oui_file
-
   prefix="$1"
   oui_file="$2"
-
   awk -v prefix="$prefix" '
     $1 == prefix && $2 == "(base" && $3 == "16)" {
       $1 = ""
@@ -48,15 +43,12 @@ lookup_company_from_oui_files() {
   local prefix
   local oui_file
   local company
-
   mac="$1"
   prefix="$(lookup_company_prefix "$mac")"
   shift
-
   for oui_file in "$@"; do
     [[ -f "$oui_file" ]] || continue
     company="$(lookup_company_from_oui_file "$prefix" "$oui_file")"
-
     if [[ -n "$company" ]]; then
       echo "$company"
       return
@@ -66,9 +58,7 @@ lookup_company_from_oui_files() {
 
 lookup_company_from_manuf_file() {
   local prefix
-
   prefix="$(lookup_company_prefix "$1")"
-
   awk -v prefix="$prefix" '
     BEGIN {
       needle = substr(prefix, 1, 2) ":" substr(prefix, 3, 2) ":" substr(prefix, 5, 2)
@@ -82,7 +72,6 @@ lookup_company_from_manuf_file() {
         print
         exit
       }
-
       print $2
       exit
     }
@@ -93,14 +82,11 @@ lookup_company_from_manuf_files() {
   local mac
   local manuf_file
   local company
-
   mac="$1"
   shift
-
   for manuf_file in "$@"; do
     [[ -f "$manuf_file" ]] || continue
     company="$(lookup_company_from_manuf_file "$mac" "$manuf_file")"
-
     if [[ -n "$company" ]]; then
       echo "$company"
       return

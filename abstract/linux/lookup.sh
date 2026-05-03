@@ -4,13 +4,7 @@ lookup_mac() {
 
 lookup_company() {
   local company
-
   company="$(lookup_company_from_oui_files "$1" /usr/share/ieee-data/oui.txt)"
-
-  if [[ -n "$company" ]]; then
-    echo "$company"
-    return
-  fi
-
+  [[ -n "$company" ]] && { echo "$company"; return; }
   echo "-"
 }

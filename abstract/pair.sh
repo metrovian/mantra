@@ -17,13 +17,10 @@ pair_set_title() {
 pair_add() {
   local key
   local value
-
   key="$1"
   value="${2:-}"
-
   PAIR_KEYS+=("$key")
   PAIR_VALUES+=("$value")
-
   if ((${#key} > PAIR_KEY_WIDTH)); then
     PAIR_KEY_WIDTH=${#key}
   fi
@@ -36,35 +33,26 @@ pair_print() {
   local line
   local key
   local value
-
   line_width=0
-
   for ((index = 0; index < ${#PAIR_KEYS[@]}; index++)); do
     key="${PAIR_KEYS[$index]}"
     value="${PAIR_VALUES[$index]}"
     line="${key}$(printf '%*s' "$((PAIR_KEY_WIDTH - ${#key} + 1))" '')${value}"
-
     if ((${#line} > line_width)); then
       line_width=${#line}
     fi
   done
-
   separator_width=${#PAIR_TITLE}
-
   if ((line_width > separator_width)); then
     separator_width=$line_width
   fi
-
   separator_width=$((separator_width + 1))
-
   echo "$PAIR_TITLE"
   printf '%*s\n' "$separator_width" '' | tr ' ' '-'
-
   for ((index = 0; index < ${#PAIR_KEYS[@]}; index++)); do
     key="${PAIR_KEYS[$index]}"
     value="${PAIR_VALUES[$index]}"
     printf "%-${PAIR_KEY_WIDTH}s %s\n" "$key" "$value"
   done
-
   echo
 }
