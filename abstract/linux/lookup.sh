@@ -1,20 +1,15 @@
 lookup_mac() {
-  ip neigh show "$1" | awk '/lladdr/ {print $5; exit}'
+  ip neigh show "$1" | awk '/lladdr/ {print $5; exit}' | awk 'NR==1 {print; exit}'
 }
 
 lookup_company() {
-  local prefix
   local company
 
-  prefix="$(lookup_company_prefix "$1")"
+  company="$(lookup_company_from_oui_files "$1" /usr/share/ieee-data/oui.txt)"
 
-  if [[ -f /usr/share/ieee-data/oui.txt ]]; then
-    company="$(lookup_company_from_oui_file "$prefix" /usr/share/ieee-data/oui.txt)"
-
-    if [[ -n "$company" ]]; then
-      echo "$company"
-      return
-    fi
+  if [[ -n "$company" ]]; then
+    echo "$company"
+    return
   fi
 
   echo "-"
