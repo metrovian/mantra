@@ -2,22 +2,29 @@ check_dns() {
   local -a answers=()
   local -a dns_servers=()
   local latency_ms
+  local latency
   local start_ms
   local end_ms
   local index
   local dns_index
   local answer_index
   local target
-  target="naver.com"
-  start_ms="$(dns_now_ms)"
+  target="google.com"
   mapfile -t answers < <(resolve_domain_answers "$target")
-  end_ms="$(dns_now_ms)"
-  latency_ms="$((end_ms - start_ms))"
   mapfile -t dns_servers < <(inspect_dns_servers)
+  latency="-"
+  if ((${#answers[@]} > 0 && ${#dns_servers[@]} > 0)); then
+    start_ms="$(dns_now_ms)"
+    if inspect_host_reachable "${dns_servers[0]}" >/dev/null 2>&1; then
+      end_ms="$(dns_now_ms)"
+      latency_ms="$((end_ms - start_ms))"
+      latency="${latency_ms} ms"
+    fi
+  fi
   pair_reset
   pair_set_title "DNS"
   pair_add "target" "$target"
-  pair_add "latency" "${latency_ms} ms"
+  pair_add "latency" "$latency"
   if ((${#dns_servers[@]} == 0)); then
     pair_add "dns" "-"
   else
