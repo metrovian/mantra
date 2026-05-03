@@ -20,6 +20,8 @@ Every change should support that direction. Prefer simple commands, clear output
 - prefer minimal MVP implementations over broad abstractions
 - make output readable for operators first
 - design commands so they can later write records without major rewrites
+- keep blank lines minimal inside functions
+- keep a single blank line between top-level functions
 
 ## current command direction
 
