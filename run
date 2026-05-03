@@ -25,9 +25,11 @@ source_modules \
   abstract/table.sh \
   prepare/local_network.sh \
   check/local_network.sh \
+  check/gateway.sh \
   check/dns.sh \
   check/subnet_neighbors.sh
 prepare_local_network_context
 check_local_network
+check_gateway
 check_dns
 check_subnet_neighbors

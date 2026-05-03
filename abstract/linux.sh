@@ -12,7 +12,11 @@ inspect_network() {
 }
 
 inspect_host() {
-  ping -c 1 -W 1 "$1" >/dev/null 2>&1 || true
+  inspect_host_reachable "$1" >/dev/null 2>&1 || true
+}
+
+inspect_host_reachable() {
+  ping -c 1 -W 1 "$1"
 }
 
 inspect_dns_servers() {
