@@ -1,3 +1,3 @@
 ## SANCTUARY
-- Portable checks for local area networks
+- Portable checks for simple local area networks
 <br></br>
