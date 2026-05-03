@@ -3,7 +3,6 @@ resolve_hostname() {
     dig +short -x "$1" @"$GATEWAY" 2>/dev/null | sed 's/\.$//' | awk 'NR==1 {print; exit}'
     return
   fi
-
   getent hosts "$1" 2>/dev/null | awk 'NR==1 {print $2; exit}' || true
 }
 

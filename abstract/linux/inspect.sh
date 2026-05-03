@@ -25,6 +25,5 @@ inspect_dns_servers() {
         }'
     return
   fi
-
   awk '/^nameserver / {print $2}' /etc/resolv.conf 2>/dev/null || true
 }

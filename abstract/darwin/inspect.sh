@@ -1,6 +1,5 @@
 inspect_network() {
   local netmask_hex
-
   GATEWAY="$(route -n get default | awk '/gateway:/ {print $2}')"
   IFACE="$(route -n get default | awk '/interface:/ {print $2}')"
   ME="$(
@@ -34,16 +33,13 @@ inspect_netmask_prefix() {
   local value
   local bit
   local prefix
-
   netmask_hex="${1#0x}"
   value=$((16#$netmask_hex))
   prefix=0
-
   for ((bit = 31; bit >= 0; bit--)); do
     if (((value >> bit) & 1)); then
       prefix=$((prefix + 1))
     fi
   done
-
   echo "$prefix"
 }
