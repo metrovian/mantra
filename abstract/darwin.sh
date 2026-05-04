@@ -21,17 +21,6 @@ inspect_host_reachable() {
   ping -c 1 -W 200 "$1"
 }
 
-inspect_dns_servers() {
-  scutil --dns 2>/dev/null \
-    | awk '
-        /nameserver\[[0-9]+\]/ {
-          if (!seen[$3]++) {
-            print $3
-          }
-        }
-      '
-}
-
 inspect_netmask_prefix() {
   local netmask_hex
   local value
@@ -74,21 +63,5 @@ resolve_hostname() {
   host "$1" 2>/dev/null \
     | awk '/domain name pointer/ {print $5; exit}' \
     | sed 's/\.$//' \
-    || true
-}
-
-resolve_domain_answers() {
-  local answers
-  answers="$(
-    dscacheutil -q host -a name "$1" 2>/dev/null \
-      | awk '/^ip_address: / {print $2}'
-  )"
-  if [[ -n "$answers" ]]; then
-    awk '!seen[$0]++' <<<"$answers"
-    return
-  fi
-  host "$1" 2>/dev/null \
-    | awk '/has address/ {print $4}' \
-    | awk '!seen[$0]++' \
     || true
 }

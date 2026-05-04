@@ -20,14 +20,11 @@ source_modules \
   abstract/$OS.sh \
   abstract/network.sh \
   abstract/lookup.sh \
-  abstract/resolve.sh \
   abstract/pair.sh \
   abstract/table.sh \
   prepare/local.sh \
   check/local.sh \
-  check/dns.sh \
   check/neighbors.sh
 prepare_local_context
 check_local
-check_dns
 check_neighbors

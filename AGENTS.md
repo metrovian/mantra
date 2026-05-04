@@ -38,11 +38,11 @@ Every change should support that direction. Prefer simple commands, clear output
 - macOS and Linux are the primary targets
 - load the platform module before common helpers and checks
 - keep the check order aligned with the diagnostic flow:
-  `LOCAL`, `DNS`, `neighbors`
+  `LOCAL`, `neighbors`
 
 ## abstract layers
 
-- `inspect` is for current state, configured values, and active probes such as ping reachability and DNS server discovery
+- `inspect` is for current state, configured values, and active probes such as ping reachability
 - `lookup` is for local table or data lookups such as `MAC` and vendor
 - `resolve` is for name and address resolution such as `PTR` and `A` records
 - `network` is for shared IPv4 subnet math and host range iteration
@@ -67,7 +67,7 @@ Every change should support that direction. Prefer simple commands, clear output
 
 ## output formatters
 
-- use `pair` for titled key-value blocks such as `LOCAL` and `DNS`
+- use `pair` for titled key-value blocks such as `LOCAL`
 - use `table` for row-based outputs with shared columns such as neighbor inventories
 - do not hand-write spacing for these outputs inside check files
 - let `pair` and `table` calculate spacing and separator width automatically
