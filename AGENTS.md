@@ -23,6 +23,13 @@ Every change should support that direction. Prefer simple commands, clear output
 - keep blank lines minimal inside functions
 - keep a single blank line between top-level functions
 
+## shell compatibility
+
+- keep shell code compatible with the default macOS `bash 3.2`
+- avoid bash 4+ features such as `mapfile`, associative arrays, and `readarray`
+- prefer simple loops and explicit data collection over version-specific shell helpers
+- treat macOS compatibility as a default requirement, not a later cleanup
+
 ## current command direction
 
 - `run` is the user-facing entry point
