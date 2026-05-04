@@ -46,13 +46,6 @@ lookup_mac_table() {
     | awk '!seen[$1]++'
 }
 
-lookup_company() {
-  local company
-  company="$(lookup_company_from_oui_files "$1" /usr/share/ieee-data/oui.txt)"
-  [[ -n "$company" ]] && { echo "$company"; return; }
-  echo "-"
-}
-
 resolve_hostname() {
   if command -v dig >/dev/null 2>&1; then
     dig +short -x "$1" @"$GATEWAY" 2>/dev/null | sed 's/\.$//' | awk 'NR==1 {print; exit}'

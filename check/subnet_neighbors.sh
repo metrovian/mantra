@@ -7,7 +7,6 @@ check_subnet_neighbors() {
   local -a ping_results=()
   local ip
   local mac
-  local company
   local hostname
   local total_hosts
   local progress_total
@@ -25,7 +24,7 @@ check_subnet_neighbors() {
   progress_total=$((total_hosts + 1))
   progress_current=0
   table_reset
-  table_set_headers "IP" "MAC" "company" "hostname"
+  table_set_headers "IP" "MAC" "hostname"
   for ip in "${hosts[@]}"; do
     inspect_host_reachable "$ip" >/dev/null 2>&1 &
     ping_pids+=("$!")
@@ -57,11 +56,7 @@ check_subnet_neighbors() {
           break
         fi
       done
-      company="-"
-      if [[ -n "${mac:-}" && "$mac" != "-" ]]; then
-        company="$(lookup_company "$mac")"
-      fi
-      active_hosts+=("$ip"$'\t'"${mac:--}"$'\t'"${company:--}")
+      active_hosts+=("$ip"$'\t'"${mac:--}")
     fi
   done
   check_subnet_neighbors_progress_done
@@ -72,12 +67,11 @@ check_subnet_neighbors() {
   progress_total=${#active_hosts[@]}
   progress_current=0
   for ((index = 0; index < ${#active_hosts[@]}; index++)); do
-    IFS=$'\t' read -r ip mac company <<<"${active_hosts[$index]}"
+    IFS=$'\t' read -r ip mac <<<"${active_hosts[$index]}"
     hostname="$(resolve_hostname "$ip")"
     table_add_row \
       "$ip" \
       "$mac" \
-      "$company" \
       "${hostname:--}"
     progress_current=$((progress_current + 1))
     check_subnet_neighbors_progress "$progress_current" "$progress_total"
