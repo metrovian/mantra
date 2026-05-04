@@ -5,9 +5,9 @@ check_neighbors() {
   local -a mac_values=()
   local -a ping_ips=()
   local -a ping_results=()
-  local -a ping_latencies=()
+  local -a ping_rtts=()
   local ip
-  local latency
+  local rtt
   local mac
   local hostname
   local total_hosts
@@ -28,10 +28,10 @@ check_neighbors() {
   progress_current=0
   table_reset
   table_set_headers "IP" "MAC" "NAME" "RTT"
-  while IFS=$'\t' read -r ip ping_result latency; do
+  while IFS=$'\t' read -r ip ping_result rtt; do
     ping_ips+=("$ip")
     ping_results+=("$ping_result")
-    ping_latencies+=("$latency")
+    ping_rtts+=("$rtt")
     progress_current=$((progress_current + 1))
     check_neighbors_progress "$progress_current" "$progress_total"
   done < <(check_neighbor_ping_table "${hosts[@]}")
@@ -45,12 +45,12 @@ check_neighbors() {
   for ((index = 0; index < ${#hosts[@]}; index++)); do
     ip="${hosts[$index]}"
     mac=""
-    latency="-"
+    rtt="-"
     ping_result=0
     for ((ping_index = 0; ping_index < ${#ping_ips[@]}; ping_index++)); do
       if [[ "${ping_ips[$ping_index]}" == "$ip" ]]; then
         ping_result="${ping_results[$ping_index]}"
-        latency="${ping_latencies[$ping_index]}"
+        rtt="${ping_rtts[$ping_index]}"
         break
       fi
     done
@@ -61,7 +61,7 @@ check_neighbors() {
       fi
     done
     if [[ "$ping_result" -eq 1 ]] || [[ -n "${mac:-}" ]]; then
-      active_hosts+=("$ip"$'\t'"${mac:--}"$'\t'"${latency:--}")
+      active_hosts+=("$ip"$'\t'"${mac:--}"$'\t'"${rtt:--}")
     fi
   done
   check_neighbors_progress_done
@@ -72,13 +72,13 @@ check_neighbors() {
   progress_total=${#active_hosts[@]}
   progress_current=0
   for ((index = 0; index < ${#active_hosts[@]}; index++)); do
-    IFS=$'\t' read -r ip mac latency <<<"${active_hosts[$index]}"
+    IFS=$'\t' read -r ip mac rtt <<<"${active_hosts[$index]}"
     hostname="$(resolve_hostname "$ip")"
     table_add_row \
       "$ip" \
       "$mac" \
       "${hostname:--}" \
-      "$latency"
+      "$rtt"
     progress_current=$((progress_current + 1))
     check_neighbors_progress "$progress_current" "$progress_total"
   done
@@ -105,18 +105,18 @@ check_neighbor_ping_table() {
 check_neighbor_ping_probe() {
   local ip
   local ping_output
-  local latency
+  local rtt
   ip="$1"
   ping_output="$(inspect_host_reachable "$ip" 2>/dev/null || true)"
-  latency="$(check_neighbor_ping_latency "$ping_output")"
-  if [[ -n "${latency:-}" ]]; then
-    printf '%s\t1\t%s\n' "$ip" "$latency"
+  rtt="$(check_neighbor_ping_rtt "$ping_output")"
+  if [[ -n "${rtt:-}" ]]; then
+    printf '%s\t1\t%s\n' "$ip" "$rtt"
     return
   fi
   printf '%s\t0\t-\n' "$ip"
 }
 
-check_neighbor_ping_latency() {
+check_neighbor_ping_rtt() {
   awk -F'time=' 'NF > 1 {
     split($2, parts, /[[:space:]]|ms/)
     printf "%.0f ms\n", parts[1]
