@@ -3,9 +3,11 @@ check_subnet_neighbors() {
   local -a hosts=()
   local -a mac_ips=()
   local -a mac_values=()
-  local -a ping_pids=()
+  local -a ping_ips=()
   local -a ping_results=()
+  local -a ping_latencies=()
   local ip
+  local latency
   local mac
   local hostname
   local total_hosts
@@ -13,8 +15,9 @@ check_subnet_neighbors() {
   local progress_current
   local index
   local line
-  local pid
   local mac_index
+  local ping_index
+  local ping_result
   while IFS= read -r line; do
     if [[ "$line" != "$ME" ]]; then
       hosts+=("$line")
@@ -24,21 +27,14 @@ check_subnet_neighbors() {
   progress_total=$((total_hosts + 1))
   progress_current=0
   table_reset
-  table_set_headers "IP" "MAC" "hostname"
-  for ip in "${hosts[@]}"; do
-    inspect_host_reachable "$ip" >/dev/null 2>&1 &
-    ping_pids+=("$!")
+  table_set_headers "IP" "MAC" "hostname" "latency"
+  while IFS=$'\t' read -r ip ping_result latency; do
+    ping_ips+=("$ip")
+    ping_results+=("$ping_result")
+    ping_latencies+=("$latency")
     progress_current=$((progress_current + 1))
     check_subnet_neighbors_progress "$progress_current" "$progress_total"
-  done
-  for ((index = 0; index < ${#ping_pids[@]}; index++)); do
-    pid="${ping_pids[$index]}"
-    if wait "$pid"; then
-      ping_results[$index]=1
-    else
-      ping_results[$index]=0
-    fi
-  done
+  done < <(check_subnet_neighbor_ping_table "${hosts[@]}")
   while IFS=$'\t' read -r ip mac; do
     [[ -n "${ip:-}" && -n "${mac:-}" ]] || continue
     mac_ips+=("$ip")
@@ -49,14 +45,23 @@ check_subnet_neighbors() {
   for ((index = 0; index < ${#hosts[@]}; index++)); do
     ip="${hosts[$index]}"
     mac=""
-    if [[ "${ping_results[$index]:-0}" -eq 1 ]]; then
-      for ((mac_index = 0; mac_index < ${#mac_ips[@]}; mac_index++)); do
-        if [[ "${mac_ips[$mac_index]}" == "$ip" ]]; then
-          mac="${mac_values[$mac_index]}"
-          break
-        fi
-      done
-      active_hosts+=("$ip"$'\t'"${mac:--}")
+    latency="-"
+    ping_result=0
+    for ((ping_index = 0; ping_index < ${#ping_ips[@]}; ping_index++)); do
+      if [[ "${ping_ips[$ping_index]}" == "$ip" ]]; then
+        ping_result="${ping_results[$ping_index]}"
+        latency="${ping_latencies[$ping_index]}"
+        break
+      fi
+    done
+    for ((mac_index = 0; mac_index < ${#mac_ips[@]}; mac_index++)); do
+      if [[ "${mac_ips[$mac_index]}" == "$ip" ]]; then
+        mac="${mac_values[$mac_index]}"
+        break
+      fi
+    done
+    if [[ "$ping_result" -eq 1 ]] || [[ -n "${mac:-}" ]]; then
+      active_hosts+=("$ip"$'\t'"${mac:--}"$'\t'"${latency:--}")
     fi
   done
   check_subnet_neighbors_progress_done
@@ -67,12 +72,13 @@ check_subnet_neighbors() {
   progress_total=${#active_hosts[@]}
   progress_current=0
   for ((index = 0; index < ${#active_hosts[@]}; index++)); do
-    IFS=$'\t' read -r ip mac <<<"${active_hosts[$index]}"
+    IFS=$'\t' read -r ip mac latency <<<"${active_hosts[$index]}"
     hostname="$(resolve_hostname "$ip")"
     table_add_row \
       "$ip" \
       "$mac" \
-      "${hostname:--}"
+      "${hostname:--}" \
+      "$latency"
     progress_current=$((progress_current + 1))
     check_subnet_neighbors_progress "$progress_current" "$progress_total"
   done
@@ -86,4 +92,34 @@ check_subnet_neighbors_progress() {
 
 check_subnet_neighbors_progress_done() {
   printf "\r%*s\r" 32 "" >&2
+}
+
+check_subnet_neighbor_ping_table() {
+  local ip
+  for ip in "$@"; do
+    check_subnet_neighbor_ping_probe "$ip" &
+  done
+  wait
+}
+
+check_subnet_neighbor_ping_probe() {
+  local ip
+  local ping_output
+  local latency
+  ip="$1"
+  ping_output="$(inspect_host_reachable "$ip" 2>/dev/null || true)"
+  latency="$(check_subnet_neighbor_ping_latency "$ping_output")"
+  if [[ -n "${latency:-}" ]]; then
+    printf '%s\t1\t%s\n' "$ip" "$latency"
+    return
+  fi
+  printf '%s\t0\t-\n' "$ip"
+}
+
+check_subnet_neighbor_ping_latency() {
+  awk -F'time=' 'NF > 1 {
+    split($2, parts, /[[:space:]]|ms/)
+    printf "%.0f ms\n", parts[1]
+    exit
+  }' <<<"$1"
 }
