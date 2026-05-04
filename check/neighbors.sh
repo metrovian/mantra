@@ -27,7 +27,7 @@ check_neighbors() {
   progress_total=$((total_hosts + 1))
   progress_current=0
   table_reset
-  table_set_headers "IP" "MAC" "hostname" "latency"
+  table_set_headers "IP" "MAC" "NAME" "RTT"
   while IFS=$'\t' read -r ip ping_result latency; do
     ping_ips+=("$ip")
     ping_results+=("$ping_result")
