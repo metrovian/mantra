@@ -1,4 +1,4 @@
-check_subnet_neighbors() {
+check_neighbors() {
   local -a active_hosts=()
   local -a hosts=()
   local -a mac_ips=()
@@ -33,15 +33,15 @@ check_subnet_neighbors() {
     ping_results+=("$ping_result")
     ping_latencies+=("$latency")
     progress_current=$((progress_current + 1))
-    check_subnet_neighbors_progress "$progress_current" "$progress_total"
-  done < <(check_subnet_neighbor_ping_table "${hosts[@]}")
+    check_neighbors_progress "$progress_current" "$progress_total"
+  done < <(check_neighbor_ping_table "${hosts[@]}")
   while IFS=$'\t' read -r ip mac; do
     [[ -n "${ip:-}" && -n "${mac:-}" ]] || continue
     mac_ips+=("$ip")
     mac_values+=("$mac")
   done < <(lookup_mac_table)
   progress_current=$((progress_current + 1))
-  check_subnet_neighbors_progress "$progress_current" "$progress_total"
+  check_neighbors_progress "$progress_current" "$progress_total"
   for ((index = 0; index < ${#hosts[@]}; index++)); do
     ip="${hosts[$index]}"
     mac=""
@@ -64,7 +64,7 @@ check_subnet_neighbors() {
       active_hosts+=("$ip"$'\t'"${mac:--}"$'\t'"${latency:--}")
     fi
   done
-  check_subnet_neighbors_progress_done
+  check_neighbors_progress_done
   if ((${#active_hosts[@]} == 0)); then
     table_print
     return
@@ -80,35 +80,35 @@ check_subnet_neighbors() {
       "${hostname:--}" \
       "$latency"
     progress_current=$((progress_current + 1))
-    check_subnet_neighbors_progress "$progress_current" "$progress_total"
+    check_neighbors_progress "$progress_current" "$progress_total"
   done
-  check_subnet_neighbors_progress_done
+  check_neighbors_progress_done
   table_print
 }
 
-check_subnet_neighbors_progress() {
+check_neighbors_progress() {
   printf "\r%s/%s" "$1" "$2" >&2
 }
 
-check_subnet_neighbors_progress_done() {
+check_neighbors_progress_done() {
   printf "\r%*s\r" 32 "" >&2
 }
 
-check_subnet_neighbor_ping_table() {
+check_neighbor_ping_table() {
   local ip
   for ip in "$@"; do
-    check_subnet_neighbor_ping_probe "$ip" &
+    check_neighbor_ping_probe "$ip" &
   done
   wait
 }
 
-check_subnet_neighbor_ping_probe() {
+check_neighbor_ping_probe() {
   local ip
   local ping_output
   local latency
   ip="$1"
   ping_output="$(inspect_host_reachable "$ip" 2>/dev/null || true)"
-  latency="$(check_subnet_neighbor_ping_latency "$ping_output")"
+  latency="$(check_neighbor_ping_latency "$ping_output")"
   if [[ -n "${latency:-}" ]]; then
     printf '%s\t1\t%s\n' "$ip" "$latency"
     return
@@ -116,7 +116,7 @@ check_subnet_neighbor_ping_probe() {
   printf '%s\t0\t-\n' "$ip"
 }
 
-check_subnet_neighbor_ping_latency() {
+check_neighbor_ping_latency() {
   awk -F'time=' 'NF > 1 {
     split($2, parts, /[[:space:]]|ms/)
     printf "%.0f ms\n", parts[1]

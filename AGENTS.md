@@ -38,7 +38,7 @@ Every change should support that direction. Prefer simple commands, clear output
 - macOS and Linux are the primary targets
 - load the platform module before common helpers and checks
 - keep the check order aligned with the diagnostic flow:
-  `LOCAL`, `GATEWAY`, `DNS`, `subnet neighbors`
+  `LOCAL`, `DNS`, `neighbors`
 
 ## abstract layers
 
