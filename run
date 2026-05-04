@@ -19,7 +19,6 @@ source_modules() {
 source_modules \
   abstract/$OS.sh \
   abstract/network.sh \
-  abstract/lookup.sh \
   abstract/pair.sh \
   abstract/table.sh \
   prepare/local.sh \

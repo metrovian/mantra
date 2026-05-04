@@ -13,10 +13,6 @@ inspect_network() {
   PREFIX="$(inspect_netmask_prefix "$netmask_hex")"
 }
 
-inspect_host() {
-  inspect_host_reachable "$1" >/dev/null 2>&1 || true
-}
-
 inspect_host_reachable() {
   ping -c 1 -W 200 "$1"
 }
@@ -35,12 +31,6 @@ inspect_netmask_prefix() {
     fi
   done
   echo "$prefix"
-}
-
-lookup_mac() {
-  local mac
-  mac="$(arp -n "$1" 2>/dev/null | awk '/ at / {print $4; exit}' || true)"
-  [[ -n "$mac" ]] && lookup_format_mac "$mac"
 }
 
 lookup_mac_table() {

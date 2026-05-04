@@ -11,16 +11,8 @@ inspect_network() {
   )"
 }
 
-inspect_host() {
-  inspect_host_reachable "$1" >/dev/null 2>&1 || true
-}
-
 inspect_host_reachable() {
   ping -c 1 -W 0.2 "$1"
-}
-
-lookup_mac() {
-  ip neigh show "$1" | awk '/lladdr/ {print $5; exit}' | awk 'NR==1 {print; exit}'
 }
 
 lookup_mac_table() {
