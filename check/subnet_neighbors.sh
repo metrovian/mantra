@@ -14,7 +14,9 @@ check_subnet_neighbors() {
   local line
   local pid
   while IFS= read -r line; do
-    hosts+=("$line")
+    if [[ "$line" != "$ME" ]]; then
+      hosts+=("$line")
+    fi
   done < <(network_subnet_hosts)
   total_hosts=${#hosts[@]}
   progress_total=$((total_hosts * 2))
