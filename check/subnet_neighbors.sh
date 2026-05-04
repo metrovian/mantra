@@ -1,6 +1,8 @@
 check_subnet_neighbors() {
   local -a active_hosts=()
   local -a hosts=()
+  local -a mac_ips=()
+  local -a mac_values=()
   local -a ping_pids=()
   local -a ping_results=()
   local ip
@@ -13,13 +15,14 @@ check_subnet_neighbors() {
   local index
   local line
   local pid
+  local mac_index
   while IFS= read -r line; do
     if [[ "$line" != "$ME" ]]; then
       hosts+=("$line")
     fi
   done < <(network_subnet_hosts)
   total_hosts=${#hosts[@]}
-  progress_total=$((total_hosts * 2))
+  progress_total=$((total_hosts + 1))
   progress_current=0
   table_reset
   table_set_headers "IP" "MAC" "company" "hostname"
@@ -37,23 +40,38 @@ check_subnet_neighbors() {
       ping_results[$index]=0
     fi
   done
+  while IFS=$'\t' read -r ip mac; do
+    [[ -n "${ip:-}" && -n "${mac:-}" ]] || continue
+    mac_ips+=("$ip")
+    mac_values+=("$mac")
+  done < <(lookup_mac_table)
+  progress_current=$((progress_current + 1))
+  check_subnet_neighbors_progress "$progress_current" "$progress_total"
   for ((index = 0; index < ${#hosts[@]}; index++)); do
     ip="${hosts[$index]}"
-    mac="$(lookup_mac "$ip")"
-    progress_current=$((progress_current + 1))
-    check_subnet_neighbors_progress "$progress_current" "$progress_total"
+    mac=""
+    for ((mac_index = 0; mac_index < ${#mac_ips[@]}; mac_index++)); do
+      if [[ "${mac_ips[$mac_index]}" == "$ip" ]]; then
+        mac="${mac_values[$mac_index]}"
+        break
+      fi
+    done
     if [[ "${ping_results[$index]:-0}" -eq 1 ]] \
       || [[ -n "${mac:-}" && "$mac" != "(incomplete)" ]]; then
-      company="$(lookup_company "$mac")"
+      company="-"
+      if [[ -n "${mac:-}" && "$mac" != "-" ]]; then
+        company="$(lookup_company "$mac")"
+      fi
       active_hosts+=("$ip"$'\t'"${mac:--}"$'\t'"${company:--}")
     fi
   done
   check_subnet_neighbors_progress_done
-  progress_total=$((progress_total + ${#active_hosts[@]}))
   if ((${#active_hosts[@]} == 0)); then
     table_print
     return
   fi
+  progress_total=${#active_hosts[@]}
+  progress_current=0
   for ((index = 0; index < ${#active_hosts[@]}; index++)); do
     IFS=$'\t' read -r ip mac company <<<"${active_hosts[$index]}"
     hostname="$(resolve_hostname "$ip")"

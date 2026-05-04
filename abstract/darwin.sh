@@ -54,6 +54,18 @@ lookup_mac() {
   [[ -n "$mac" ]] && lookup_format_mac "$mac"
 }
 
+lookup_mac_table() {
+  arp -an 2>/dev/null \
+    | awk '
+        / at / && $4 != "(incomplete)" {
+          ip = $2
+          gsub(/[()]/, "", ip)
+          print ip "\t" tolower($4)
+        }
+      ' \
+    | awk '!seen[$1]++'
+}
+
 lookup_company() {
   local company
   company="$(lookup_company_from_oui_files "$1" \
