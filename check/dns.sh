@@ -6,9 +6,14 @@ check_dns() {
   local dns_index
   local answer_index
   local target
+  local line
   target="google.com"
-  mapfile -t answers < <(resolve_domain_answers "$target")
-  mapfile -t dns_servers < <(inspect_dns_servers)
+  while IFS= read -r line; do
+    answers+=("$line")
+  done < <(resolve_domain_answers "$target")
+  while IFS= read -r line; do
+    dns_servers+=("$line")
+  done < <(inspect_dns_servers)
   latency="-"
   if ((${#answers[@]} > 0)); then
     latency="$(dns_ping_latency "$target")"

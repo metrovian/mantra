@@ -9,7 +9,10 @@ check_subnet_neighbors() {
   local progress_total
   local progress_current
   local index
-  mapfile -t hosts < <(network_subnet_hosts)
+  local line
+  while IFS= read -r line; do
+    hosts+=("$line")
+  done < <(network_subnet_hosts)
   total_hosts=${#hosts[@]}
   progress_total=$((total_hosts * 2))
   progress_current=0
