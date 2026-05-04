@@ -50,7 +50,7 @@ inspect_netmask_prefix() {
 
 lookup_mac() {
   local mac
-  mac="$(arp -n "$1" | awk '/ at / {print $4; exit}')"
+  mac="$(arp -n "$1" 2>/dev/null | awk '/ at / {print $4; exit}' || true)"
   [[ -n "$mac" ]] && lookup_format_mac "$mac"
 }
 
