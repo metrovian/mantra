@@ -1,6 +1,8 @@
 check_subnet_neighbors() {
   local -a active_hosts=()
   local -a hosts=()
+  local -a ping_pids=()
+  local -a ping_results=()
   local ip
   local mac
   local company
@@ -10,6 +12,7 @@ check_subnet_neighbors() {
   local progress_current
   local index
   local line
+  local pid
   while IFS= read -r line; do
     hosts+=("$line")
   done < <(network_subnet_hosts)
@@ -19,18 +22,28 @@ check_subnet_neighbors() {
   table_reset
   table_set_headers "IP" "MAC" "company" "hostname"
   for ip in "${hosts[@]}"; do
-    inspect_host "$ip" &
+    inspect_host_reachable "$ip" >/dev/null 2>&1 &
+    ping_pids+=("$!")
     progress_current=$((progress_current + 1))
     check_subnet_neighbors_progress "$progress_current" "$progress_total"
   done
-  wait
-  for ip in "${hosts[@]}"; do
+  for ((index = 0; index < ${#ping_pids[@]}; index++)); do
+    pid="${ping_pids[$index]}"
+    if wait "$pid"; then
+      ping_results[$index]=1
+    else
+      ping_results[$index]=0
+    fi
+  done
+  for ((index = 0; index < ${#hosts[@]}; index++)); do
+    ip="${hosts[$index]}"
     mac="$(lookup_mac "$ip")"
     progress_current=$((progress_current + 1))
     check_subnet_neighbors_progress "$progress_current" "$progress_total"
-    if [[ -n "${mac:-}" && "$mac" != "(incomplete)" ]]; then
+    if [[ "${ping_results[$index]:-0}" -eq 1 ]] \
+      || [[ -n "${mac:-}" && "$mac" != "(incomplete)" ]]; then
       company="$(lookup_company "$mac")"
-      active_hosts+=("$ip"$'\t'"$mac"$'\t'"${company:--}")
+      active_hosts+=("$ip"$'\t'"${mac:--}"$'\t'"${company:--}")
     fi
   done
   check_subnet_neighbors_progress_done
