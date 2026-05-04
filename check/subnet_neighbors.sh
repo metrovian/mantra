@@ -50,14 +50,13 @@ check_subnet_neighbors() {
   for ((index = 0; index < ${#hosts[@]}; index++)); do
     ip="${hosts[$index]}"
     mac=""
-    for ((mac_index = 0; mac_index < ${#mac_ips[@]}; mac_index++)); do
-      if [[ "${mac_ips[$mac_index]}" == "$ip" ]]; then
-        mac="${mac_values[$mac_index]}"
-        break
-      fi
-    done
-    if [[ "${ping_results[$index]:-0}" -eq 1 ]] \
-      || [[ -n "${mac:-}" && "$mac" != "(incomplete)" ]]; then
+    if [[ "${ping_results[$index]:-0}" -eq 1 ]]; then
+      for ((mac_index = 0; mac_index < ${#mac_ips[@]}; mac_index++)); do
+        if [[ "${mac_ips[$mac_index]}" == "$ip" ]]; then
+          mac="${mac_values[$mac_index]}"
+          break
+        fi
+      done
       company="-"
       if [[ -n "${mac:-}" && "$mac" != "-" ]]; then
         company="$(lookup_company "$mac")"
