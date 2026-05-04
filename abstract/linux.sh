@@ -16,7 +16,7 @@ inspect_host() {
 }
 
 inspect_host_reachable() {
-  ping -c 1 -W 1 "$1"
+  ping -c 1 -W 0.2 "$1"
 }
 
 inspect_dns_servers() {
