@@ -69,9 +69,6 @@ inspect_mdns_browse_table() {
   local address_pid
   local host
   local ip
-  if ! command -v dns-sd >/dev/null 2>&1; then
-    return
-  fi
   browse_file="$(mktemp)"
   dns-sd -B _workstation._tcp local. >"$browse_file" 2>/dev/null &
   browse_pid=$!
@@ -130,9 +127,7 @@ inspect_mdns_browse_table() {
 }
 
 resolve_mdns_hostname() {
-  if command -v dig >/dev/null 2>&1; then
-    dig +short -x "$1" @224.0.0.251 -p 5353 2>/dev/null \
-      | resolve_mdns_clean_name \
-      | awk 'NR==1 {print; exit}'
-  fi
+  dig +short -x "$1" @224.0.0.251 -p 5353 2>/dev/null \
+    | resolve_mdns_clean_name \
+    | awk 'NR==1 {print; exit}'
 }
