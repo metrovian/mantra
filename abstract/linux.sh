@@ -29,7 +29,7 @@ inspect_mdns_browse_table() {
   if ! command -v avahi-browse >/dev/null 2>&1; then
     return
   fi
-  avahi-browse --parsable --all --resolve --terminate 2>/dev/null \
+  (timeout 0.2s avahi-browse --parsable --all --resolve 2>/dev/null || true) \
     | awk -F';' '
         $1 == "=" && $7 != "" && $8 != "" {
           host = $7
@@ -43,7 +43,7 @@ inspect_mdns_browse_table() {
 
 resolve_mdns_hostname() {
   if command -v avahi-resolve-address >/dev/null 2>&1; then
-    avahi-resolve-address "$1" 2>/dev/null \
+    (timeout 0.2s avahi-resolve-address "$1" 2>/dev/null || true) \
       | awk 'NR==1 {print $2; exit}' \
       | sed 's/\.$//' \
       | sed 's/\.local$//'
