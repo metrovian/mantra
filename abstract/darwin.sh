@@ -14,7 +14,17 @@ inspect_network() {
 }
 
 inspect_host_reachable() {
-  ping -c 1 -W 200 "$1"
+  ping -c 1 -W "$(
+    awk -v timeout="$INSPECT_TIMEOUT" '
+      BEGIN {
+        value = int(timeout * 1000)
+        if (value < 1) {
+          value = 1
+        }
+        print value
+      }
+    '
+  )" "$1"
 }
 
 inspect_netmask_prefix() {
@@ -65,7 +75,7 @@ inspect_mdns_browse_table() {
   browse_file="$(mktemp)"
   dns-sd -B _workstation._tcp local. >"$browse_file" 2>/dev/null &
   browse_pid=$!
-  sleep 0.2
+  sleep "$MDNS_BROWSE_TIMEOUT"
   kill "$browse_pid" 2>/dev/null || true
   wait "$browse_pid" 2>/dev/null || true
   browse_output="$(cat "$browse_file")"
@@ -87,7 +97,7 @@ inspect_mdns_browse_table() {
     resolve_file="$(mktemp)"
     dns-sd -L "$instance" _workstation._tcp local. >"$resolve_file" 2>/dev/null &
     resolve_pid=$!
-    sleep 0.2
+    sleep "$MDNS_RESOLVE_TIMEOUT"
     kill "$resolve_pid" 2>/dev/null || true
     wait "$resolve_pid" 2>/dev/null || true
     resolve_output="$(cat "$resolve_file")"
@@ -106,7 +116,7 @@ inspect_mdns_browse_table() {
     address_file="$(mktemp)"
     dns-sd -G v4 "$host" >"$address_file" 2>/dev/null &
     address_pid=$!
-    sleep 0.2
+    sleep "$MDNS_RESOLVE_TIMEOUT"
     kill "$address_pid" 2>/dev/null || true
     wait "$address_pid" 2>/dev/null || true
     address_output="$(cat "$address_file")"

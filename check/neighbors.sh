@@ -112,9 +112,18 @@ check_neighbors_progress_done() {
 }
 
 check_neighbor_ping_table() {
+  local concurrent
+  local limit
   local ip
+  concurrent=0
+  limit="$INSPECT_CONCURRENCY"
   for ip in "$@"; do
     check_neighbor_ping_probe "$ip" &
+    concurrent=$((concurrent + 1))
+    if ((concurrent >= limit)); then
+      wait
+      concurrent=0
+    fi
   done
   wait
 }

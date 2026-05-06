@@ -12,7 +12,7 @@ inspect_network() {
 }
 
 inspect_host_reachable() {
-  ping -c 1 -W 0.2 "$1"
+  ping -c 1 -W "$INSPECT_TIMEOUT" "$1"
 }
 
 lookup_mac_table() {
@@ -29,7 +29,10 @@ inspect_mdns_browse_table() {
   if ! command -v avahi-browse >/dev/null 2>&1; then
     return
   fi
-  (timeout 0.2s avahi-browse --parsable --all --resolve 2>/dev/null || true) \
+  (
+    timeout "${MDNS_BROWSE_TIMEOUT}s" \
+      avahi-browse --parsable --all --resolve 2>/dev/null || true
+  ) \
     | awk -F';' '
         $1 == "=" && $7 != "" && $8 != "" {
           host = $7
@@ -47,7 +50,10 @@ inspect_mdns_browse_table() {
 
 resolve_mdns_hostname() {
   if command -v avahi-resolve-address >/dev/null 2>&1; then
-    (timeout 0.2s avahi-resolve-address "$1" 2>/dev/null || true) \
+    (
+      timeout "${MDNS_RESOLVE_TIMEOUT}s" \
+        avahi-resolve-address "$1" 2>/dev/null || true
+    ) \
       | awk 'NR==1 {print $2; exit}' \
       | resolve_mdns_clean_name
     return
