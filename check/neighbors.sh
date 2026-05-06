@@ -1,6 +1,8 @@
 check_neighbors() {
   local -a active_hosts=()
   local -a hosts=()
+  local -a hostname_ips=()
+  local -a hostname_values=()
   local -a mac_ips=()
   local -a mac_values=()
   local -a ping_ips=()
@@ -15,6 +17,7 @@ check_neighbors() {
   local progress_current
   local index
   local line
+  local hostname_index
   local mac_index
   local ping_index
   local ping_result
@@ -33,7 +36,7 @@ check_neighbors() {
     ping_results+=("$ping_result")
     ping_rtts+=("$rtt")
     progress_current=$((progress_current + 1))
-    check_neighbors_progress "$progress_current" "$progress_total"
+    check_neighbors_progress_count "ping" "$progress_current" "$progress_total"
   done < <(check_neighbor_ping_table "${hosts[@]}")
   while IFS=$'\t' read -r ip mac; do
     [[ -n "${ip:-}" && -n "${mac:-}" ]] || continue
@@ -41,7 +44,6 @@ check_neighbors() {
     mac_values+=("$mac")
   done < <(lookup_mac_table)
   progress_current=$((progress_current + 1))
-  check_neighbors_progress "$progress_current" "$progress_total"
   for ((index = 0; index < ${#hosts[@]}; index++)); do
     ip="${hosts[$index]}"
     mac=""
@@ -71,27 +73,46 @@ check_neighbors() {
   fi
   progress_total=${#active_hosts[@]}
   progress_current=0
+  check_neighbors_progress_count "mdns" "$progress_current" "$progress_total"
+  while IFS=$'\t' read -r ip hostname; do
+    [[ -n "${ip:-}" && -n "${hostname:-}" ]] || continue
+    hostname_ips+=("$ip")
+    hostname_values+=("$hostname")
+  done < <(inspect_mdns_browse_table)
   for ((index = 0; index < ${#active_hosts[@]}; index++)); do
     IFS=$'\t' read -r ip mac rtt <<<"${active_hosts[$index]}"
-    hostname="$(resolve_hostname "$ip")"
+    hostname=""
+    for ((hostname_index = 0; hostname_index < ${#hostname_ips[@]}; hostname_index++)); do
+      if [[ "${hostname_ips[$hostname_index]}" == "$ip" ]]; then
+        hostname="${hostname_values[$hostname_index]}"
+        break
+      fi
+    done
+    if [[ -z "${hostname:-}" ]]; then
+      hostname="$(resolve_mdns_hostname "$ip")"
+    fi
     table_add_row \
       "$ip" \
       "$mac" \
       "${hostname:--}" \
       "$rtt"
     progress_current=$((progress_current + 1))
-    check_neighbors_progress "$progress_current" "$progress_total"
+    check_neighbors_progress_count "mdns" "$progress_current" "$progress_total"
   done
   check_neighbors_progress_done
   table_print
 }
 
-check_neighbors_progress() {
-  printf "\r%s/%s" "$1" "$2" >&2
+check_neighbors_progress_status() {
+  printf '\r\033[2K%s' "$1" >&2
+}
+
+check_neighbors_progress_count() {
+  printf '\r\033[2K%s %s/%s' "$1" "$2" "$3" >&2
 }
 
 check_neighbors_progress_done() {
-  printf "\r%*s\r" 32 "" >&2
+  printf '\r\033[2K' >&2
 }
 
 check_neighbor_ping_table() {

@@ -45,13 +45,87 @@ lookup_mac_table() {
     | awk '!seen[$1]++'
 }
 
-resolve_hostname() {
-  if command -v dig >/dev/null 2>&1; then
-    dig +short -x "$1" @"$GATEWAY" 2>/dev/null | sed 's/\.$//' | awk 'NR==1 {print; exit}'
+inspect_mdns_browse_table() {
+  local browse_output
+  local browse_file
+  local browse_pid
+  local instance
+  local line
+  local resolve_output
+  local resolve_file
+  local resolve_pid
+  local address_output
+  local address_file
+  local address_pid
+  local host
+  local ip
+  if ! command -v dns-sd >/dev/null 2>&1; then
     return
   fi
-  host "$1" 2>/dev/null \
-    | awk '/domain name pointer/ {print $5; exit}' \
-    | sed 's/\.$//' \
-    || true
+  browse_file="$(mktemp)"
+  dns-sd -B _workstation._tcp local. >"$browse_file" 2>/dev/null &
+  browse_pid=$!
+  sleep 2
+  kill "$browse_pid" 2>/dev/null || true
+  wait "$browse_pid" 2>/dev/null || true
+  browse_output="$(cat "$browse_file")"
+  rm -f "$browse_file"
+  while IFS= read -r line; do
+    [[ "$line" == *" Add "* ]] || continue
+    instance="$(
+      awk '
+        / Add / {
+          out = $7
+          for (i = 8; i <= NF; i++) {
+            out = out " " $i
+          }
+          print out
+        }
+      ' <<<"$line"
+    )"
+    [[ -n "${instance:-}" ]] || continue
+    resolve_file="$(mktemp)"
+    dns-sd -L "$instance" _workstation._tcp local. >"$resolve_file" 2>/dev/null &
+    resolve_pid=$!
+    sleep 2
+    kill "$resolve_pid" 2>/dev/null || true
+    wait "$resolve_pid" 2>/dev/null || true
+    resolve_output="$(cat "$resolve_file")"
+    rm -f "$resolve_file"
+    host="$(
+      awk '
+        /can be reached at/ {
+          sub(/^.*can be reached at /, "")
+          sub(/:[0-9][0-9]*[[:space:]].*$/, "")
+          print
+          exit
+        }
+      ' <<<"$resolve_output" \
+        | sed 's/\.$//' \
+        | sed 's/\.local$//'
+    )"
+    [[ -n "${host:-}" ]] || continue
+    address_file="$(mktemp)"
+    dns-sd -G v4 "$host" >"$address_file" 2>/dev/null &
+    address_pid=$!
+    sleep 2
+    kill "$address_pid" 2>/dev/null || true
+    wait "$address_pid" 2>/dev/null || true
+    address_output="$(cat "$address_file")"
+    rm -f "$address_file"
+    ip="$(
+      awk '/ Add / {print $NF; exit}' <<<"$address_output"
+    )"
+    [[ -n "${ip:-}" ]] || continue
+    printf '%s\t%s\n' "$ip" "$host"
+  done <<<"$browse_output" | awk '!seen[$1]++'
+}
+
+resolve_mdns_hostname() {
+  if command -v dig >/dev/null 2>&1; then
+    dig +short -x "$1" @224.0.0.251 -p 5353 2>/dev/null \
+      | sed 's/\.$//' \
+      | sed 's/\.local$//' \
+      | awk 'NR==1 {print; exit}'
+  fi
 }

@@ -25,10 +25,34 @@ lookup_mac_table() {
     | awk '!seen[$1]++'
 }
 
-resolve_hostname() {
-  if command -v dig >/dev/null 2>&1; then
-    dig +short -x "$1" @"$GATEWAY" 2>/dev/null | sed 's/\.$//' | awk 'NR==1 {print; exit}'
+inspect_mdns_browse_table() {
+  if ! command -v avahi-browse >/dev/null 2>&1; then
     return
   fi
-  getent hosts "$1" 2>/dev/null | awk 'NR==1 {print $2; exit}' || true
+  avahi-browse --parsable --all --resolve --terminate 2>/dev/null \
+    | awk -F';' '
+        $1 == "=" && $7 != "" && $8 != "" {
+          host = $7
+          sub(/\.$/, "", host)
+          sub(/\.local$/, "", host)
+          print $8 "\t" host
+        }
+      ' \
+    | awk '!seen[$1]++'
+}
+
+resolve_mdns_hostname() {
+  if command -v avahi-resolve-address >/dev/null 2>&1; then
+    avahi-resolve-address "$1" 2>/dev/null \
+      | awk 'NR==1 {print $2; exit}' \
+      | sed 's/\.$//' \
+      | sed 's/\.local$//'
+    return
+  fi
+  if command -v dig >/dev/null 2>&1; then
+    dig +short -x "$1" @224.0.0.251 -p 5353 2>/dev/null \
+      | sed 's/\.$//' \
+      | sed 's/\.local$//' \
+      | awk 'NR==1 {print; exit}'
+  fi
 }
