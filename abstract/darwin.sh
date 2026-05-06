@@ -100,9 +100,7 @@ inspect_mdns_browse_table() {
           print
           exit
         }
-      ' <<<"$resolve_output" \
-        | sed 's/\.$//' \
-        | sed 's/\.local$//'
+      ' <<<"$resolve_output" | resolve_mdns_clean_name
     )"
     [[ -n "${host:-}" ]] || continue
     address_file="$(mktemp)"
@@ -124,8 +122,7 @@ inspect_mdns_browse_table() {
 resolve_mdns_hostname() {
   if command -v dig >/dev/null 2>&1; then
     dig +short -x "$1" @224.0.0.251 -p 5353 2>/dev/null \
-      | sed 's/\.$//' \
-      | sed 's/\.local$//' \
+      | resolve_mdns_clean_name \
       | awk 'NR==1 {print; exit}'
   fi
 }

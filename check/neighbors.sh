@@ -103,10 +103,6 @@ check_neighbors() {
   table_print
 }
 
-check_neighbors_progress_status() {
-  printf '\r\033[2K%s' "$1" >&2
-}
-
 check_neighbors_progress_count() {
   printf '\r\033[2K%s %s/%s' "$1" "$2" "$3" >&2
 }

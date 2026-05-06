@@ -33,11 +33,15 @@ inspect_mdns_browse_table() {
     | awk -F';' '
         $1 == "=" && $7 != "" && $8 != "" {
           host = $7
-          sub(/\.$/, "", host)
-          sub(/\.local$/, "", host)
           print $8 "\t" host
         }
       ' \
+    | awk -F'\t' '{
+        host = $2
+        sub(/\.$/, "", host)
+        sub(/\.local$/, "", host)
+        print $1 "\t" host
+      }' \
     | awk '!seen[$1]++'
 }
 
@@ -45,14 +49,12 @@ resolve_mdns_hostname() {
   if command -v avahi-resolve-address >/dev/null 2>&1; then
     (timeout 0.2s avahi-resolve-address "$1" 2>/dev/null || true) \
       | awk 'NR==1 {print $2; exit}' \
-      | sed 's/\.$//' \
-      | sed 's/\.local$//'
+      | resolve_mdns_clean_name
     return
   fi
   if command -v dig >/dev/null 2>&1; then
     dig +short -x "$1" @224.0.0.251 -p 5353 2>/dev/null \
-      | sed 's/\.$//' \
-      | sed 's/\.local$//' \
+      | resolve_mdns_clean_name \
       | awk 'NR==1 {print; exit}'
   fi
 }
