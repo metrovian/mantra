@@ -46,10 +46,21 @@ inspect_netmask_prefix() {
 lookup_mac_table() {
   arp -an 2>/dev/null \
     | awk '
+        function format_mac(value, octets, count, index, out) {
+          count = split(tolower(value), octets, ":")
+          out = ""
+          for (index = 1; index <= count; index++) {
+            if (length(octets[index]) == 1) {
+              octets[index] = "0" octets[index]
+            }
+            out = out (index == 1 ? "" : ":") octets[index]
+          }
+          return out
+        }
         / at / && $4 != "(incomplete)" {
           ip = $2
           gsub(/[()]/, "", ip)
-          print ip "\t" tolower($4)
+          print ip "\t" format_mac($4)
         }
       ' \
     | awk '!seen[$1]++'
