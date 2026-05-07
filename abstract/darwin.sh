@@ -138,7 +138,9 @@ inspect_mdns_browse_table() {
 }
 
 resolve_mdns_hostname() {
-  dig +short -x "$1" @224.0.0.251 -p 5353 2>/dev/null \
+  (
+    dig +short -x "$1" @224.0.0.251 -p 5353 2>/dev/null || true
+  ) \
     | resolve_mdns_clean_name \
     | awk 'NR==1 {print; exit}'
 }
