@@ -15,15 +15,7 @@ inspect_network() {
 
 inspect_host_reachable() {
   ping -c 1 -W "$(
-    awk -v timeout="$INSPECT_TIMEOUT" '
-      BEGIN {
-        value = int(timeout * 1000)
-        if (value < 1) {
-          value = 1
-        }
-        print value
-      }
-    '
+    inspect_timeout_millis "$INSPECT_TIMEOUT"
   )" "$1"
 }
 
@@ -41,6 +33,61 @@ inspect_netmask_prefix() {
     fi
   done
   echo "$prefix"
+}
+
+inspect_timeout_millis() {
+  awk -v timeout="$1" '
+    BEGIN {
+      value = int(timeout * 1000)
+      if (value < 1) {
+        value = 1
+      }
+      print value
+    }
+  '
+}
+
+inspect_now_millis() {
+  perl -MTime::HiRes=time -e 'printf "%.0f\n", time() * 1000'
+}
+
+inspect_timeout_remaining() {
+  local deadline
+  local now
+  local remaining
+  deadline="$1"
+  now="$(inspect_now_millis)"
+  remaining=$((deadline - now))
+  if ((remaining < 1)); then
+    return 1
+  fi
+  awk -v value="$remaining" '
+    BEGIN {
+      printf "%.3f\n", value / 1000
+    }
+  '
+}
+
+inspect_capture_with_timeout() {
+  local timeout
+  local output_file
+  local command_pid
+  local timer_pid
+  timeout="$1"
+  shift
+  output_file="$(mktemp)"
+  "$@" >"$output_file" 2>/dev/null &
+  command_pid=$!
+  (
+    sleep "$timeout"
+    kill "$command_pid" 2>/dev/null || true
+  ) &
+  timer_pid=$!
+  wait "$command_pid" 2>/dev/null || true
+  kill "$timer_pid" 2>/dev/null || true
+  wait "$timer_pid" 2>/dev/null || true
+  cat "$output_file"
+  rm -f "$output_file"
 }
 
 lookup_mac_table() {
@@ -67,27 +114,23 @@ lookup_mac_table() {
 }
 
 inspect_mdns_browse_table() {
+  local browse_deadline
   local browse_output
-  local browse_file
-  local browse_pid
   local instance
   local line
+  local remaining_timeout
   local resolve_output
-  local resolve_file
-  local resolve_pid
   local address_output
-  local address_file
-  local address_pid
   local host
   local ip
-  browse_file="$(mktemp)"
-  dns-sd -B _workstation._tcp local. >"$browse_file" 2>/dev/null &
-  browse_pid=$!
-  sleep "$MDNS_BROWSE_TIMEOUT"
-  kill "$browse_pid" 2>/dev/null || true
-  wait "$browse_pid" 2>/dev/null || true
-  browse_output="$(cat "$browse_file")"
-  rm -f "$browse_file"
+  browse_deadline=$(( $(inspect_now_millis) + $(inspect_timeout_millis \
+    "$MDNS_BROWSE_TIMEOUT") ))
+  remaining_timeout="$(inspect_timeout_remaining "$browse_deadline")" || return
+  browse_output="$(
+    inspect_capture_with_timeout \
+      "$remaining_timeout" \
+      dns-sd -B _workstation._tcp local.
+  )"
   while IFS= read -r line; do
     [[ "$line" == *" Add "* ]] || continue
     instance="$(
@@ -102,14 +145,12 @@ inspect_mdns_browse_table() {
       ' <<<"$line"
     )"
     [[ -n "${instance:-}" ]] || continue
-    resolve_file="$(mktemp)"
-    dns-sd -L "$instance" _workstation._tcp local. >"$resolve_file" 2>/dev/null &
-    resolve_pid=$!
-    sleep "$MDNS_RESOLVE_TIMEOUT"
-    kill "$resolve_pid" 2>/dev/null || true
-    wait "$resolve_pid" 2>/dev/null || true
-    resolve_output="$(cat "$resolve_file")"
-    rm -f "$resolve_file"
+    remaining_timeout="$(inspect_timeout_remaining "$browse_deadline")" || break
+    resolve_output="$(
+      inspect_capture_with_timeout \
+        "$remaining_timeout" \
+        dns-sd -L "$instance" _workstation._tcp local.
+    )"
     host="$(
       awk '
         /can be reached at/ {
@@ -121,14 +162,12 @@ inspect_mdns_browse_table() {
       ' <<<"$resolve_output" | resolve_mdns_clean_name
     )"
     [[ -n "${host:-}" ]] || continue
-    address_file="$(mktemp)"
-    dns-sd -G v4 "$host" >"$address_file" 2>/dev/null &
-    address_pid=$!
-    sleep "$MDNS_RESOLVE_TIMEOUT"
-    kill "$address_pid" 2>/dev/null || true
-    wait "$address_pid" 2>/dev/null || true
-    address_output="$(cat "$address_file")"
-    rm -f "$address_file"
+    remaining_timeout="$(inspect_timeout_remaining "$browse_deadline")" || break
+    address_output="$(
+      inspect_capture_with_timeout \
+        "$remaining_timeout" \
+        dns-sd -G v4 "$host"
+    )"
     ip="$(
       awk '/ Add / {print $NF; exit}' <<<"$address_output"
     )"
@@ -138,9 +177,9 @@ inspect_mdns_browse_table() {
 }
 
 resolve_mdns_hostname() {
-  (
-    dig +short -x "$1" @224.0.0.251 -p 5353 2>/dev/null || true
-  ) \
+  inspect_capture_with_timeout \
+    "$MDNS_RESOLVE_TIMEOUT" \
+    dig +short -x "$1" @224.0.0.251 -p 5353 \
     | resolve_mdns_clean_name \
     | awk 'NR==1 {print; exit}'
 }
