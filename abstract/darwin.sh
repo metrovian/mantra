@@ -46,14 +46,14 @@ inspect_netmask_prefix() {
 lookup_mac_table() {
   arp -an 2>/dev/null \
     | awk '
-        function format_mac(value, octets, count, index, out) {
+        function format_mac(value, octets, count, i, out) {
           count = split(tolower(value), octets, ":")
           out = ""
-          for (index = 1; index <= count; index++) {
-            if (length(octets[index]) == 1) {
-              octets[index] = "0" octets[index]
+          for (i = 1; i <= count; i++) {
+            if (length(octets[i]) == 1) {
+              octets[i] = "0" octets[i]
             }
-            out = out (index == 1 ? "" : ":") octets[index]
+            out = out (i == 1 ? "" : ":") octets[i]
           }
           return out
         }
