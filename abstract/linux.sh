@@ -15,16 +15,6 @@ inspect_host_reachable() {
   ping -c 1 -W "$INSPECT_TIMEOUT" "$1"
 }
 
-lookup_mac_table() {
-  ip neigh show 2>/dev/null \
-    | awk '
-        /lladdr/ {
-          print $1 "\t" tolower($5)
-        }
-      ' \
-    | awk '!seen[$1]++'
-}
-
 inspect_mdns_browse_table() {
   (
     timeout "${MDNS_BROWSE_TIMEOUT}s" \
@@ -42,6 +32,16 @@ inspect_mdns_browse_table() {
         sub(/\.local$/, "", host)
         print $1 "\t" host
       }' \
+    | awk '!seen[$1]++'
+}
+
+lookup_mac_table() {
+  ip neigh show 2>/dev/null \
+    | awk '
+        /lladdr/ {
+          print $1 "\t" tolower($5)
+        }
+      ' \
     | awk '!seen[$1]++'
 }
 

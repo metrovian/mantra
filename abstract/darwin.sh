@@ -68,51 +68,6 @@ inspect_timeout_remaining() {
   '
 }
 
-inspect_capture_with_timeout() {
-  local timeout
-  local output_file
-  local command_pid
-  local timer_pid
-  timeout="$1"
-  shift
-  output_file="$(mktemp)"
-  "$@" >"$output_file" 2>/dev/null &
-  command_pid=$!
-  (
-    sleep "$timeout"
-    kill "$command_pid" 2>/dev/null || true
-  ) &
-  timer_pid=$!
-  wait "$command_pid" 2>/dev/null || true
-  kill "$timer_pid" 2>/dev/null || true
-  wait "$timer_pid" 2>/dev/null || true
-  cat "$output_file"
-  rm -f "$output_file"
-}
-
-lookup_mac_table() {
-  arp -an 2>/dev/null \
-    | awk '
-        function format_mac(value, octets, count, i, out) {
-          count = split(tolower(value), octets, ":")
-          out = ""
-          for (i = 1; i <= count; i++) {
-            if (length(octets[i]) == 1) {
-              octets[i] = "0" octets[i]
-            }
-            out = out (i == 1 ? "" : ":") octets[i]
-          }
-          return out
-        }
-        / at / && $4 != "(incomplete)" {
-          ip = $2
-          gsub(/[()]/, "", ip)
-          print ip "\t" format_mac($4)
-        }
-      ' \
-    | awk '!seen[$1]++'
-}
-
 inspect_mdns_browse_table() {
   local browse_deadline
   local browse_output
@@ -174,6 +129,51 @@ inspect_mdns_browse_table() {
     [[ -n "${ip:-}" ]] || continue
     printf '%s\t%s\n' "$ip" "$host"
   done <<<"$browse_output" | awk '!seen[$1]++'
+}
+
+inspect_capture_with_timeout() {
+  local timeout
+  local output_file
+  local command_pid
+  local timer_pid
+  timeout="$1"
+  shift
+  output_file="$(mktemp)"
+  "$@" >"$output_file" 2>/dev/null &
+  command_pid=$!
+  (
+    sleep "$timeout"
+    kill "$command_pid" 2>/dev/null || true
+  ) &
+  timer_pid=$!
+  wait "$command_pid" 2>/dev/null || true
+  kill "$timer_pid" 2>/dev/null || true
+  wait "$timer_pid" 2>/dev/null || true
+  cat "$output_file"
+  rm -f "$output_file"
+}
+
+lookup_mac_table() {
+  arp -an 2>/dev/null \
+    | awk '
+        function format_mac(value, octets, count, i, out) {
+          count = split(tolower(value), octets, ":")
+          out = ""
+          for (i = 1; i <= count; i++) {
+            if (length(octets[i]) == 1) {
+              octets[i] = "0" octets[i]
+            }
+            out = out (i == 1 ? "" : ":") octets[i]
+          }
+          return out
+        }
+        / at / && $4 != "(incomplete)" {
+          ip = $2
+          gsub(/[()]/, "", ip)
+          print ip "\t" format_mac($4)
+        }
+      ' \
+    | awk '!seen[$1]++'
 }
 
 resolve_mdns_hostname() {
