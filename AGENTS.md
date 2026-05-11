@@ -34,7 +34,7 @@ Every change should support that direction. Prefer simple commands, clear output
 
 - `run` is the user-facing entry point
 - common flow should stay in `run`
-- platform-specific helper functions belong in `abstract/<os>.sh`
+- platform-specific helper functions belong in `abstracts/<os>.sh`
 - macOS and Linux are the primary targets
 - load the platform module before common helpers and checks
 - keep the check order aligned with the diagnostic flow:
