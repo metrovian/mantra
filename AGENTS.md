@@ -34,6 +34,7 @@ output, and minimal structure.
 ## current command direction
 
 - the root bootstrap script lives in `./3rdparty/setup-debian.sh`
+- root-level submodule management scripts live in `./add` `./remove`
 - the bootstrap script should update submodules before invoking module-level setup scripts
 - each module exposes its third-party setup script at `./<module>/3rdparty/setup-debian.sh`
 - modules live at the repository root, not inside a grouping directory

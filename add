@@ -1,0 +1,25 @@
+#!/bin/bash
+set -euo pipefail
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+usage() {
+  echo "$0 <url>" >&2
+  exit 1
+}
+
+project_name() {
+  local url="$1"
+  local path="${url##*/}"
+  path="${path%.git}"
+  printf '%s\n' "$path"
+}
+
+main() {
+  local url="${1:-}"
+  local path
+  [ -n "$url" ] || usage
+  path="$(project_name "$url")"
+  git -C "$ROOT_DIR" submodule add "$url" "$path"
+}
+
+main "$@"
