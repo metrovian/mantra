@@ -11,17 +11,17 @@ source_modules() {
   done
 }
 
-[[ -f "$ROOT_DIR/abstract/$OS.sh" ]] || {
+[[ -f "$ROOT_DIR/abstracts/$OS.sh" ]] || {
   echo "unsupported OS: $OS" >&2
   exit 1
 }
 
 source_modules \
-  abstract/$OS.sh \
-  abstract/network.sh \
-  abstract/pair.sh \
-  abstract/resolve.sh \
-  abstract/table.sh \
+  abstracts/$OS.sh \
+  utils/network.sh \
+  utils/pair.sh \
+  utils/resolve.sh \
+  utils/table.sh \
   prepares/environments.sh \
   prepares/local.sh \
   checks/local.sh \
