@@ -22,10 +22,10 @@ source_modules \
   abstract/pair.sh \
   abstract/resolve.sh \
   abstract/table.sh \
-  prepare/environments.sh \
-  prepare/local.sh \
-  check/local.sh \
-  check/neighbors.sh
+  prepares/environments.sh \
+  prepares/local.sh \
+  checks/local.sh \
+  checks/neighbors.sh
 prepare_environment_context
 prepare_local_context
 check_local
