@@ -1,3 +1,6 @@
 [submodule "sanctuary"]
 	path = sanctuary
 	url = https://github.com/metrovian/sanctuary.git
+[submodule "marionette"]
+	path = marionette
+	url = https://github.com/metrovian/marionette.git
