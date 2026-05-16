@@ -6,6 +6,7 @@ source "$ROOT_DIR/utils/source.sh"
 source_modules \
   utils/output.sh \
   utils/path.sh \
+  utils/table.sh \
   utils/validate.sh \
   profiles/common.sh \
   hosts/common.sh
@@ -15,9 +16,11 @@ main() {
   validate_require_arg_count "$#" 2 "<profile> <alias>"
   validate_names "$1" "$2"
   profile_require "$1"
-  host_require "$1" "$2"
+  if ! host_exists "$1" "$2"; then
+    exit 1
+  fi
   host_remove "$1" "$2"
-  output_log "host removed: $2"
+  host_print_table "$1"
 }
 
 main "$@"
