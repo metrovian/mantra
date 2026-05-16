@@ -6,10 +6,10 @@ ROOT_DIR=$(
   pwd
 )
 
-. "$ROOT_DIR/utils/output.sh"
-. "$ROOT_DIR/utils/path.sh"
-. "$ROOT_DIR/utils/config.sh"
-. "$ROOT_DIR/utils/validate.sh"
+source "$ROOT_DIR/utils/output.sh"
+source "$ROOT_DIR/utils/path.sh"
+source "$ROOT_DIR/utils/config.sh"
+source "$ROOT_DIR/utils/validate.sh"
 
 main() {
   local current
