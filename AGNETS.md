@@ -37,14 +37,13 @@ generation.
 ## current command direction
 
 - keep the top-level command files easy to read
-- use top-level commands such as `status`, `profile`, `host`, `add`,
-  `remove`, `use`, `attach`, `detach`, and `run`
+- use top-level commands such as `profile`, `host`, `add`, `remove`, `use`,
+  `attach`, `detach`, and `run`
 - keep `run` focused on ssh execution for the current profile
 - keep `profile` and `host` focused on list output
 - keep shared helpers in `utils/`, `profiles/common.sh`, and `hosts/common.sh`
 - macOS and Linux are the primary targets
-- keep command flow aligned with profile operations: `status`, `profile`,
-  `host`
+- keep command flow aligned with profile operations: `profile`, `host`
 
 ## abstract layers
 
