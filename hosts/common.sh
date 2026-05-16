@@ -38,6 +38,17 @@ host_each() {
   done <"$(profile_hosts_file "$profile")"
 }
 
+host_count() {
+  local profile
+  profile=$1
+  if [ ! -f "$(profile_hosts_file "$profile")" ]; then
+    printf '0\n'
+    return 0
+  fi
+  awk -F '\t' 'NF > 0 && $1 != "" { count++ } END { print count + 0 }' \
+    "$(profile_hosts_file "$profile")"
+}
+
 host_add() {
   local profile
   local alias

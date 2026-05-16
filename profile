@@ -6,24 +6,16 @@ source "$ROOT_DIR/utils/source.sh"
 source_modules \
   utils/path.sh \
   utils/table.sh \
-  profiles/common.sh
+  profiles/common.sh \
+  hosts/common.sh
 
 main() {
-  local current
   local name
   path_prepare
-  current=""
-  if current=$(profile_current); then
-    :
-  fi
   table_reset
-  table_set_headers PROFILE CURRENT
+  table_set_headers PROFILE HOST
   for name in $(profile_list); do
-    if [ "$name" = "$current" ]; then
-      table_add_row "$name" yes
-    else
-      table_add_row "$name" ""
-    fi
+    table_add_row "$name" "$(host_count "$name")"
   done
   table_print
 }
