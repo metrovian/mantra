@@ -65,6 +65,16 @@ profile_list() {
   done
 }
 
+profile_print_table() {
+  local name
+  table_reset
+  table_set_headers PROFILE HOST
+  for name in $(profile_list); do
+    table_add_row "$name" "$(host_count "$name")"
+  done
+  table_print
+}
+
 profile_create() {
   local name
   name=$1

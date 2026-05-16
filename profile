@@ -10,14 +10,8 @@ source_modules \
   hosts/common.sh
 
 main() {
-  local name
   path_prepare
-  table_reset
-  table_set_headers PROFILE HOST
-  for name in $(profile_list); do
-    table_add_row "$name" "$(host_count "$name")"
-  done
-  table_print
+  profile_print_table
 }
 
 main "$@"
