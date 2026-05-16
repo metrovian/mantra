@@ -10,16 +10,6 @@ host_exists() {
     "$(profile_hosts_file "$profile")"
 }
 
-host_require() {
-  local profile
-  local alias
-  profile=$1
-  alias=$2
-  if ! host_exists "$profile" "$alias"; then
-    output_die "host not found: $alias"
-  fi
-}
-
 host_each() {
   local profile
   local callback
@@ -84,7 +74,9 @@ host_write_ssh_config() {
   profile=$1
   output=$2
   known_hosts=$(profile_known_hosts_file "$profile")
-  profile_ensure_known_hosts_file "$profile"
+  if [ ! -f "$known_hosts" ]; then
+    : >"$known_hosts"
+  fi
   : >"$output"
   while IFS=$'\t' read -r alias user hostname; do
     [ -n "$alias" ] || continue
@@ -103,9 +95,11 @@ host_run_alias() {
   local profile
   alias=$1
   shift
-  profile=$(profile_current_or_die)
+  profile=$(profile_current) || output_die "no active profile"
   profile_require "$profile"
-  host_require "$profile" "$alias"
+  if ! host_exists "$profile" "$alias"; then
+    output_die "host not found: $alias"
+  fi
   host_write_ssh_config "$profile" "$MARIONETTE_GENERATED_CONFIG_FILE"
   exec ssh -F "$MARIONETTE_GENERATED_CONFIG_FILE" "$alias" "$@"
 }

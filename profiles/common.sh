@@ -10,14 +10,6 @@ profile_known_hosts_file() {
   printf '%s/known_hosts\n' "$(profile_dir "$1")"
 }
 
-profile_ensure_known_hosts_file() {
-  local known_hosts
-  known_hosts=$(profile_known_hosts_file "$1")
-  if [ ! -f "$known_hosts" ]; then
-    : >"$known_hosts"
-  fi
-}
-
 profile_exists() {
   [ -d "$(profile_dir "$1")" ]
 }
@@ -33,10 +25,6 @@ profile_current() {
     return 1
   fi
   sed -n '1p' "$MARIONETTE_CURRENT_PROFILE_FILE"
-}
-
-profile_current_or_die() {
-  profile_current || output_die "no active profile"
 }
 
 profile_set_current() {
