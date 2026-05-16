@@ -7,8 +7,7 @@ source_modules \
   utils/output.sh \
   utils/path.sh \
   utils/validate.sh \
-  profiles/common.sh \
-  hosts/common.sh
+  profiles/common.sh
 
 main() {
   path_prepare
