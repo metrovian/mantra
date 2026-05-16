@@ -6,9 +6,11 @@ ROOT_DIR=$(
   pwd
 )
 
-source "$ROOT_DIR/utils/path.sh"
-source "$ROOT_DIR/profiles/common.sh"
-source "$ROOT_DIR/utils/table.sh"
+source "$ROOT_DIR/utils/source.sh"
+source_modules \
+  utils/path.sh \
+  utils/table.sh \
+  profiles/common.sh
 
 main() {
   local current

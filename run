@@ -6,10 +6,12 @@ ROOT_DIR=$(
   pwd
 )
 
-source "$ROOT_DIR/utils/output.sh"
-source "$ROOT_DIR/utils/path.sh"
-source "$ROOT_DIR/profiles/common.sh"
-source "$ROOT_DIR/hosts/common.sh"
+source "$ROOT_DIR/utils/source.sh"
+source_modules \
+  utils/output.sh \
+  utils/path.sh \
+  profiles/common.sh \
+  hosts/common.sh
 
 usage() {
   echo "$0 <alias> [ssh args...]"

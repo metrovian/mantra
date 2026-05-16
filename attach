@@ -6,11 +6,13 @@ ROOT_DIR=$(
   pwd
 )
 
-source "$ROOT_DIR/utils/output.sh"
-source "$ROOT_DIR/utils/path.sh"
-source "$ROOT_DIR/profiles/common.sh"
-source "$ROOT_DIR/utils/validate.sh"
-source "$ROOT_DIR/hosts/common.sh"
+source "$ROOT_DIR/utils/source.sh"
+source_modules \
+  utils/output.sh \
+  utils/path.sh \
+  utils/validate.sh \
+  profiles/common.sh \
+  hosts/common.sh
 
 main() {
   path_prepare
