@@ -1,5 +1,3 @@
-set -eu
-
 profile_dir() {
   printf '%s/%s\n' "$MARIONETTE_PROFILES_DIR" "$1"
 }

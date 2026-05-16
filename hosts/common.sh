@@ -1,5 +1,3 @@
-set -eu
-
 host_exists() {
   local profile
   local alias
