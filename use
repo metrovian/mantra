@@ -6,4 +6,18 @@ ROOT_DIR=$(
   pwd
 )
 
-bash "$ROOT_DIR/profiles/switch.sh" "$@"
+source "$ROOT_DIR/utils/output.sh"
+source "$ROOT_DIR/utils/path.sh"
+source "$ROOT_DIR/profiles/common.sh"
+source "$ROOT_DIR/utils/validate.sh"
+
+main() {
+  path_prepare
+  validate_require_arg_count "$#" 1 "<name>"
+  validate_names "$1"
+  profile_require "$1"
+  profile_set_current "$1"
+  output_log "profile switched: $1"
+}
+
+main "$@"
