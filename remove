@@ -19,7 +19,7 @@ main() {
   fi
   profile_clear_current_if_selected "$1"
   profile_remove "$1"
-  exec "$ROOT_DIR/profile"
+  exec "$ROOT_DIR/status"
 }
 
 main "$@"

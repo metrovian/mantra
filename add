@@ -18,7 +18,7 @@ main() {
     exit 1
   fi
   profile_add "$1"
-  exec "$ROOT_DIR/profile"
+  exec "$ROOT_DIR/status"
 }
 
 main "$@"
