@@ -4,7 +4,6 @@ ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 source "$ROOT_DIR/utils/source.sh"
 source_modules \
-  utils/output.sh \
   utils/path.sh \
   utils/validate.sh \
   profiles/common.sh
@@ -13,9 +12,11 @@ main() {
   path_prepare
   validate_require_arg_count "$#" 1 "<name>"
   validate_names "$1"
-  profile_require "$1"
+  if ! profile_exists "$1"; then
+    exit 1
+  fi
   profile_set_current "$1"
-  output_log "profile switched: $1"
+  exec "$ROOT_DIR/status"
 }
 
 main "$@"
