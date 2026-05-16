@@ -8,6 +8,10 @@ profile_hosts_file() {
   printf '%s/hosts\n' "$(profile_dir "$1")"
 }
 
+profile_known_hosts_file() {
+  printf '%s/known_hosts_%s\n' "$MARIONETTE_STATE_DIR" "$1"
+}
+
 profile_exists() {
   [ -d "$(profile_dir "$1")" ]
 }

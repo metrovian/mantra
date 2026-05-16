@@ -60,18 +60,22 @@ remove_host() {
 write_ssh_config() {
   local profile
   local output
+  local known_hosts
   local alias
   local user
   local hostname
   profile=$1
   output=$2
+  known_hosts=$(profile_known_hosts_file "$profile")
   : >"$output"
+  : >"$known_hosts"
   while IFS=$'\t' read -r alias user hostname; do
     [ -n "$alias" ] || continue
     cat >>"$output" <<EOF
 Host $alias
   HostName $hostname
   User $user
+  UserKnownHostsFile $known_hosts
 
 EOF
   done <<EOF
