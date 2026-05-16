@@ -37,13 +37,14 @@ generation.
 ## current command direction
 
 - keep the top-level command files easy to read
-- use top-level commands such as `status`, `add`, `remove`, `use`, `attach`,
-  `detach`, and `run`
+- use top-level commands such as `status`, `add`, `remove`, `checkout`,
+  `hook`, `release`, and `run`
 - keep `run` focused on ssh execution for the current profile
-- keep `status` focused on profile status and host list output
+- keep `status` focused on profile inventory and selected host list output
 - keep shared helpers in `utils/`, `profiles/common.sh`, and `hosts/common.sh`
 - macOS and Linux are the primary targets
-- keep command flow aligned with profile operations: `status`
+- keep command flow aligned with profile operations: `status`, `checkout`,
+  `hook`, `release`
 
 ## abstract layers
 
@@ -52,7 +53,7 @@ generation.
 - `profiles/common.sh` is for shared profile operations such as current
   profile lookup, profile addition, removal, and listing
 - `hosts/common.sh` is for shared host operations such as host lookup,
-  attachment, detachment, listing, and generated ssh config output
+  removal, listing, and generated ssh config output
 - keep command-specific behavior in the top-level command file when it is used
   by only one command
 - move a helper out of a command file only when another command actually shares
@@ -86,30 +87,20 @@ generation.
 
 ## profile operations
 
-- support profile-scoped SSH host management: attach, detach, and list
-- support active profile switching
-- support profile add, remove, list, and change
+- support profile-scoped SSH host management: hook, release, and list
+- support active profile switching through `checkout`
+- support profile add, remove, and list through `status`
 - keep profile data easy to inspect and rewrite
 - prefer changes that can later emit records of what profile was active and
   what hosts were installed
 
 ## output formatters
 
-- use `pair` for titled key-value blocks such as `current`
 - use `table` for row-based outputs with shared columns such as host
-  inventories
+  inventories and profile listings
 - do not hand-write spacing for these outputs inside command files
-- let `pair` and `table` calculate spacing and separator width automatically
+- let `table` calculate spacing and separator width automatically
 - keep command files focused on values and order, not on presentation details
-- keep pair blocks ordered from the most diagnostic field to the most
-  identifying field when practical
-
-### pair usage
-
-- call `pair_reset`
-- call `pair_set_title` once
-- call `pair_add` for each key-value line
-- call `pair_print` at the end
 
 ### table usage
 
