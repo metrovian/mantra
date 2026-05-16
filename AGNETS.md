@@ -37,8 +37,8 @@ generation.
 ## current command direction
 
 - keep the top-level command files easy to read
-- use top-level commands such as `status`, `profile`, `host`, `create`,
-  `delete`, `use`, `attach`, `detach`, and `run`
+- use top-level commands such as `status`, `profile`, `host`, `add`,
+  `remove`, `use`, `attach`, `detach`, and `run`
 - keep `run` focused on ssh execution for the current profile
 - keep `profile` and `host` focused on list output
 - keep shared helpers in `utils/`, `profiles/common.sh`, and `hosts/common.sh`
@@ -51,7 +51,7 @@ generation.
 - `utils/` is for global helpers such as paths, validation, output, and module
   sourcing
 - `profiles/common.sh` is for shared profile operations such as current
-  profile lookup, profile creation, removal, and listing
+  profile lookup, profile addition, removal, and listing
 - `hosts/common.sh` is for shared host operations such as host lookup,
   attachment, detachment, listing, and generated ssh config output
 - keep command-specific behavior in the top-level command file when it is used
@@ -90,7 +90,7 @@ generation.
 
 - support profile-scoped SSH host management: attach, detach, and list
 - support active profile switching
-- support profile create, delete, list, and change
+- support profile add, remove, list, and change
 - keep profile data easy to inspect and rewrite
 - prefer changes that can later emit records of what profile was active and
   what hosts were installed
