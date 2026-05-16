@@ -15,9 +15,7 @@ profile_exists() {
 }
 
 profile_require() {
-  if ! profile_exists "$1"; then
-    output_die "profile not found: $1"
-  fi
+  profile_exists "$1"
 }
 
 profile_current() {

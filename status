@@ -4,7 +4,6 @@ ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 source "$ROOT_DIR/utils/source.sh"
 source_modules \
-  utils/output.sh \
   utils/path.sh \
   utils/table.sh \
   utils/validate.sh \
@@ -32,6 +31,9 @@ main() {
   else
     selected=$(profile_current) || selected=
   fi
+  if [ -n "$selected" ]; then
+    profile_require "$selected"
+  fi
   table_reset
   table_set_headers PROFILE HOST
   for name in $(profile_list); do
@@ -45,7 +47,6 @@ main() {
   if [ -z "$selected" ]; then
     exit 0
   fi
-  profile_require "$selected"
   echo
   table_reset
   table_set_headers IP USER ALIAS

@@ -95,10 +95,10 @@ host_run_alias() {
   local profile
   alias=$1
   shift
-  profile=$(profile_current) || output_die "no active profile"
-  profile_require "$profile"
+  profile=$(profile_current) || return 1
+  profile_require "$profile" || return 1
   if ! host_exists "$profile" "$alias"; then
-    output_die "host not found: $alias"
+    return 1
   fi
   host_write_ssh_config "$profile" "$MARIONETTE_GENERATED_CONFIG_FILE"
   exec ssh -F "$MARIONETTE_GENERATED_CONFIG_FILE" "$alias" "$@"
