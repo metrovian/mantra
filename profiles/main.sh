@@ -23,19 +23,19 @@ main() {
   case "$1" in
     list)
       shift
-      bash "$ROOT_DIR/profile/list.sh" "$@"
+      bash "$ROOT_DIR/profiles/list.sh" "$@"
       ;;
     add)
       shift
-      bash "$ROOT_DIR/profile/add.sh" "$@"
+      bash "$ROOT_DIR/profiles/add.sh" "$@"
       ;;
     remove)
       shift
-      bash "$ROOT_DIR/profile/remove.sh" "$@"
+      bash "$ROOT_DIR/profiles/remove.sh" "$@"
       ;;
     switch)
       shift
-      bash "$ROOT_DIR/profile/switch.sh" "$@"
+      bash "$ROOT_DIR/profiles/switch.sh" "$@"
       ;;
     *)
       usage

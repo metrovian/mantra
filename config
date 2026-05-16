@@ -9,7 +9,7 @@ ROOT_DIR=$(
 source "$ROOT_DIR/utils/output.sh"
 source "$ROOT_DIR/utils/path.sh"
 source "$ROOT_DIR/utils/validate.sh"
-source "$ROOT_DIR/profile/common.sh"
+source "$ROOT_DIR/profiles/common.sh"
 
 usage() {
   cat <<'EOF'
@@ -34,15 +34,15 @@ main() {
   case "$1" in
     current)
       shift
-      bash "$ROOT_DIR/profile/current.sh" "$@"
+      bash "$ROOT_DIR/profiles/current.sh" "$@"
       ;;
     profile)
       shift
-      bash "$ROOT_DIR/profile/main.sh" "$@"
+      bash "$ROOT_DIR/profiles/main.sh" "$@"
       ;;
     host)
       shift
-      bash "$ROOT_DIR/host/main.sh" "$@"
+      bash "$ROOT_DIR/hosts/main.sh" "$@"
       ;;
     *)
       usage

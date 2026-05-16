@@ -8,7 +8,7 @@ ROOT_DIR=$(
 source "$ROOT_DIR/utils/output.sh"
 source "$ROOT_DIR/utils/path.sh"
 source "$ROOT_DIR/utils/validate.sh"
-source "$ROOT_DIR/profile/common.sh"
+source "$ROOT_DIR/profiles/common.sh"
 
 main() {
   path_prepare

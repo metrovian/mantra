@@ -22,15 +22,15 @@ main() {
   case "$1" in
     list)
       shift
-      bash "$ROOT_DIR/host/list.sh" "$@"
+      bash "$ROOT_DIR/hosts/list.sh" "$@"
       ;;
     add)
       shift
-      bash "$ROOT_DIR/host/add.sh" "$@"
+      bash "$ROOT_DIR/hosts/add.sh" "$@"
       ;;
     remove)
       shift
-      bash "$ROOT_DIR/host/remove.sh" "$@"
+      bash "$ROOT_DIR/hosts/remove.sh" "$@"
       ;;
     *)
       usage
