@@ -12,12 +12,32 @@ host_exists() {
     "$(profile_hosts_file "$profile")"
 }
 
-list_hosts() {
+require_host() {
   local profile
+  local alias
   profile=$1
-  if [ -f "$(profile_hosts_file "$profile")" ]; then
-    cat "$(profile_hosts_file "$profile")"
+  alias=$2
+  if ! host_exists "$profile" "$alias"; then
+    die "host not found: $alias"
   fi
+}
+
+each_host() {
+  local profile
+  local callback
+  local alias
+  local user
+  local hostname
+  profile=$1
+  callback=$2
+  shift 2
+  if [ ! -f "$(profile_hosts_file "$profile")" ]; then
+    return 0
+  fi
+  while IFS=$'\t' read -r alias user hostname; do
+    [ -n "$alias" ] || continue
+    "$callback" "$alias" "$user" "$hostname" "$@"
+  done <"$(profile_hosts_file "$profile")"
 }
 
 add_host() {
@@ -45,30 +65,36 @@ remove_host() {
   mv "$output" "$input"
 }
 
-write_ssh_config() {
-  local profile
-  local output
-  local known_hosts
+write_ssh_config_host() {
   local alias
   local user
   local hostname
-  profile=$1
-  output=$2
-  known_hosts=$(profile_known_hosts_file "$profile")
-  : >"$output"
-  : >"$known_hosts"
-  while IFS=$'\t' read -r alias user hostname; do
-    [ -n "$alias" ] || continue
-    cat >>"$output" <<EOF
+  local output
+  local known_hosts
+  alias=$1
+  user=$2
+  hostname=$3
+  output=$4
+  known_hosts=$5
+  cat >>"$output" <<EOF
 Host $alias
   HostName $hostname
   User $user
   UserKnownHostsFile $known_hosts
 
 EOF
-  done <<EOF
-$(list_hosts "$profile")
-EOF
+}
+
+write_ssh_config() {
+  local profile
+  local output
+  local known_hosts
+  profile=$1
+  output=$2
+  known_hosts=$(profile_known_hosts_file "$profile")
+  : >"$output"
+  : >"$known_hosts"
+  each_host "$profile" write_ssh_config_host "$output" "$known_hosts"
 }
 
 run_host_alias() {
@@ -76,13 +102,9 @@ run_host_alias() {
   local profile
   alias=$1
   shift
-  profile=$(current_profile) || die "no active profile"
-  if ! profile_exists "$profile"; then
-    die "profile not found: $profile"
-  fi
-  if ! host_exists "$profile" "$alias"; then
-    die "host not found in current profile: $alias"
-  fi
+  profile=$(current_profile_or_die)
+  require_profile "$profile"
+  require_host "$profile" "$alias"
   write_ssh_config "$profile" "$MARIONETTE_GENERATED_CONFIG_FILE"
   exec ssh -F "$MARIONETTE_GENERATED_CONFIG_FILE" "$alias" "$@"
 }

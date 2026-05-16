@@ -29,6 +29,10 @@ current_profile() {
   sed -n '1p' "$MARIONETTE_CURRENT_PROFILE_FILE"
 }
 
+current_profile_or_die() {
+  current_profile || die "no active profile"
+}
+
 set_current_profile() {
   printf '%s\n' "$1" >"$MARIONETTE_CURRENT_PROFILE_FILE"
 }

@@ -20,17 +20,12 @@ main() {
   if [ "$#" -eq 1 ]; then
     profile=$1
   else
-    profile=$(current_profile) || die "no active profile"
+    profile=$(current_profile_or_die)
   fi
   require_profile "$profile"
   table_reset
   table_set_headers alias user hostname
-  while IFS=$'\t' read -r alias user hostname; do
-    [ -n "$alias" ] || continue
-    table_add_row "$alias" "$user" "$hostname"
-  done <<EOF
-$(list_hosts "$profile")
-EOF
+  each_host "$profile" table_add_row
   table_print
 }
 

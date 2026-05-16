@@ -17,9 +17,7 @@ main() {
   require_arg_count "$#" 2 "config host remove <profile> <alias>"
   validate_names "$1" "$2"
   require_profile "$1"
-  if ! host_exists "$1" "$2"; then
-    die "host not found: $2"
-  fi
+  require_host "$1" "$2"
   remove_host "$1" "$2"
   log "host removed: $2"
 }
