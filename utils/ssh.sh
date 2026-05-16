@@ -100,8 +100,8 @@ run_host_alias() {
   local profile
   alias=$1
   shift
-  profile=$(current_profile_or_die)
-  require_profile "$profile"
+  profile=$(profile_current_or_die)
+  profile_require "$profile"
   require_host "$profile" "$alias"
   write_ssh_config "$profile" "$MARIONETTE_GENERATED_CONFIG_FILE"
   exec ssh -F "$MARIONETTE_GENERATED_CONFIG_FILE" "$alias" "$@"

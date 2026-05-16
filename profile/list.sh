@@ -7,7 +7,7 @@ ROOT_DIR=$(
 
 source "$ROOT_DIR/utils/output.sh"
 source "$ROOT_DIR/utils/path.sh"
-source "$ROOT_DIR/utils/config.sh"
+source "$ROOT_DIR/profile/common.sh"
 source "$ROOT_DIR/utils/table.sh"
 
 main() {
@@ -15,12 +15,12 @@ main() {
   local name
   path_prepare
   current=""
-  if current=$(current_profile); then
+  if current=$(profile_current); then
     :
   fi
   table_reset
   table_set_headers profile current
-  for name in $(list_profiles); do
+  for name in $(profile_list); do
     if [ "$name" = "$current" ]; then
       table_add_row "$name" yes
     else

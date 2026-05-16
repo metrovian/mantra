@@ -7,7 +7,7 @@ ROOT_DIR=$(
 
 source "$ROOT_DIR/utils/output.sh"
 source "$ROOT_DIR/utils/path.sh"
-source "$ROOT_DIR/utils/config.sh"
+source "$ROOT_DIR/profile/common.sh"
 source "$ROOT_DIR/utils/validate.sh"
 source "$ROOT_DIR/utils/ssh.sh"
 
@@ -15,7 +15,7 @@ main() {
   path_prepare
   validate_require_arg_count "$#" 4 "config host add <profile> <alias> <user> <hostname>"
   validate_names "$1" "$2" "$3"
-  require_profile "$1"
+  profile_require "$1"
   if host_exists "$1" "$2"; then
     output_die "host already exists: $2"
   fi

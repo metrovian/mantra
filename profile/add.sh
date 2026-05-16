@@ -8,7 +8,7 @@ ROOT_DIR=$(
 source "$ROOT_DIR/utils/output.sh"
 source "$ROOT_DIR/utils/path.sh"
 source "$ROOT_DIR/utils/validate.sh"
-source "$ROOT_DIR/utils/config.sh"
+source "$ROOT_DIR/profile/common.sh"
 
 main() {
   path_prepare
@@ -17,7 +17,7 @@ main() {
   if profile_exists "$1"; then
     output_die "profile already exists: $1"
   fi
-  create_profile "$1"
+  profile_create "$1"
   output_log "profile added: $1"
 }
 
