@@ -12,14 +12,10 @@ source "$ROOT_DIR/utils/config.sh"
 source "$ROOT_DIR/utils/validate.sh"
 
 main() {
-  if [ "$#" -ne 1 ]; then
-    die "usage: config profile switch <name>"
-  fi
-  marionette_init_paths
-  validate_name "$1"
-  if ! profile_exists "$1"; then
-    die "profile not found: $1"
-  fi
+  marionette_prepare
+  require_arg_count "$#" 1 "config profile switch <name>"
+  validate_names "$1"
+  require_profile "$1"
   set_current_profile "$1"
   log "profile switched: $1"
 }

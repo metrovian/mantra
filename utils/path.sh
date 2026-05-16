@@ -11,3 +11,8 @@ marionette_init_paths() {
 marionette_ensure_layout() {
   mkdir -p "$MARIONETTE_PROFILES_DIR" "$MARIONETTE_STATE_DIR"
 }
+
+marionette_prepare() {
+  marionette_init_paths
+  marionette_ensure_layout
+}

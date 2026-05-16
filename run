@@ -19,8 +19,7 @@ EOF
 }
 
 main() {
-  marionette_init_paths
-  marionette_ensure_layout
+  marionette_prepare
   if [ "$#" -eq 0 ]; then
     usage
     exit 1

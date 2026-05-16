@@ -16,6 +16,12 @@ profile_exists() {
   [ -d "$(profile_dir "$1")" ]
 }
 
+require_profile() {
+  if ! profile_exists "$1"; then
+    die "profile not found: $1"
+  fi
+}
+
 current_profile() {
   if [ ! -f "$MARIONETTE_CURRENT_PROFILE_FILE" ]; then
     return 1
@@ -29,6 +35,16 @@ set_current_profile() {
 
 clear_current_profile() {
   rm -f "$MARIONETTE_CURRENT_PROFILE_FILE"
+}
+
+clear_current_profile_if_selected() {
+  local current
+  local profile
+  profile=$1
+  current=$(current_profile) || return 0
+  if [ "$current" = "$profile" ]; then
+    clear_current_profile
+  fi
 }
 
 list_profiles() {
