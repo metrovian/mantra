@@ -35,7 +35,7 @@ main() {
   pair_reset
   pair_set_title STATUS
   pair_add profile "$profile"
-  pair_add path "$(profile_dir "$profile")"
+  pair_add host "$(host_count "$profile")"
   pair_print
   table_reset
   table_set_headers IP USER ALIAS
