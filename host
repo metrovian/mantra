@@ -6,6 +6,7 @@ source "$ROOT_DIR/utils/source.sh"
 source_modules \
   utils/output.sh \
   utils/path.sh \
+  utils/pair.sh \
   utils/table.sh \
   utils/validate.sh \
   profiles/common.sh \
@@ -31,6 +32,11 @@ main() {
     profile=$(profile_current_or_die)
   fi
   profile_require "$profile"
+  pair_reset
+  pair_set_title STATUS
+  pair_add profile "$profile"
+  pair_add path "$(profile_dir "$profile")"
+  pair_print
   table_reset
   table_set_headers IP USER ALIAS
   host_each "$profile" host_add_table_row
