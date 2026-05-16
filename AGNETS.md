@@ -36,27 +36,28 @@ generation.
 
 ## current command direction
 
-- the user-facing entry point does not need to be named `run`
-- keep the main command flow in the entry point easy to read
-- split profile and host behavior into top-level `profile` and `host` areas
-- platform-specific helper functions belong in `abstracts/<os>.sh`
+- keep the top-level command files easy to read
+- use top-level commands such as `status`, `profile`, `host`, `create`,
+  `delete`, `use`, `attach`, `detach`, and `run`
+- keep `run` focused on ssh execution for the current profile
+- keep `profile` and `host` focused on list output
+- keep shared helpers in `utils/`, `profiles/common.sh`, and `hosts/common.sh`
 - macOS and Linux are the primary targets
-- load the platform module before common helpers
-- keep command flow aligned with profile operations: `current`, `host`,
-  `profile`
+- keep command flow aligned with profile operations: `status`, `profile`,
+  `host`
 
 ## abstract layers
 
-- `inspect` is for current state and configured values such as the active
-  profile and installed ssh host entries
-- `lookup` is for local data lookups such as profile names, host aliases, and
-  profile-scoped host mappings
-- `resolve` is for name and address resolution such as `HostName` lookup and
-  profile-selected target values
-- keep these boundaries explicit when adding new helper functions
-- keep these boundaries as function groups inside each platform module
-- prefer putting OS-specific ssh config inspection in `inspect` rather than in
-  command files
+- `utils/` is for global helpers such as paths, validation, output, and module
+  sourcing
+- `profiles/common.sh` is for shared profile operations such as current
+  profile lookup, profile creation, removal, and listing
+- `hosts/common.sh` is for shared host operations such as host lookup,
+  attachment, detachment, listing, and generated ssh config output
+- keep command-specific behavior in the top-level command file when it is used
+  by only one command
+- move a helper out of a command file only when another command actually shares
+  it
 
 ## file ownership
 
@@ -87,9 +88,9 @@ generation.
 
 ## profile operations
 
-- support profile-scoped SSH host management: add, remove, list, and change
+- support profile-scoped SSH host management: attach, detach, and list
 - support active profile switching
-- support profile add, remove, list, and change
+- support profile create, delete, list, and change
 - keep profile data easy to inspect and rewrite
 - prefer changes that can later emit records of what profile was active and
   what hosts were installed
