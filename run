@@ -12,10 +12,7 @@ source "$ROOT_DIR/profiles/common.sh"
 source "$ROOT_DIR/hosts/common.sh"
 
 usage() {
-  cat <<'EOF'
-usage:
-  run <alias> [ssh args...]
-EOF
+  echo "$0 <alias> [ssh args...]"
 }
 
 main() {
