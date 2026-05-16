@@ -16,19 +16,23 @@ validate_names() {
 validate_require_arg_count() {
   local actual
   local expected
+  local args
   actual=$1
   expected=$2
+  args=$3
   if [ "$actual" -ne "$expected" ]; then
-    output_die "usage: $3"
+    output_die "$0 $args"
   fi
 }
 
 validate_require_arg_max() {
   local actual
   local maximum
+  local args
   actual=$1
   maximum=$2
+  args=$3
   if [ "$actual" -gt "$maximum" ]; then
-    output_die "usage: $3"
+    output_die "$0 $args"
   fi
 }
