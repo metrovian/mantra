@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -eu
+
+ROOT_DIR=$(
+  cd "$(dirname "$0")"
+  pwd
+)
+
+bash "$ROOT_DIR/profiles/switch.sh" "$@"
