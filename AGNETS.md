@@ -37,13 +37,14 @@ generation.
 ## current command direction
 
 - keep the top-level command files easy to read
-- use top-level commands such as `profile`, `host`, `add`, `remove`, `use`,
+- use top-level commands such as `profile`, `status`, `add`, `remove`, `use`,
   `attach`, `detach`, and `run`
 - keep `run` focused on ssh execution for the current profile
-- keep `profile` and `host` focused on list output
+- keep `profile` focused on list output
+- keep `status` focused on profile status and host list output
 - keep shared helpers in `utils/`, `profiles/common.sh`, and `hosts/common.sh`
 - macOS and Linux are the primary targets
-- keep command flow aligned with profile operations: `profile`, `host`
+- keep command flow aligned with profile operations: `profile`, `status`
 
 ## abstract layers
 
@@ -69,8 +70,8 @@ generation.
   acronym such as `OS`, `IP`, `SSH`, or `MAC`
 - readability matters more than clever formatting
 - prefer keeping lines within 88 characters when practical
-- prefer short names such as `profile` and `host` when the meaning is already
-  clear
+- prefer short names such as `profile` and `status` when the meaning is
+  already clear
 - prefer measured or concrete values over boolean status when they help
   diagnostics more directly, such as the selected profile path over a changed
   flag
