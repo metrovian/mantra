@@ -12,18 +12,6 @@ host_exists() {
     "$(profile_hosts_file "$profile")"
 }
 
-host_record() {
-  local profile
-  local alias
-  profile=$1
-  alias=$2
-  if [ ! -f "$(profile_hosts_file "$profile")" ]; then
-    return 1
-  fi
-  awk -F '\t' -v alias="$alias" '$1 == alias { print; found = 1 } END { exit !found }' \
-    "$(profile_hosts_file "$profile")"
-}
-
 list_hosts() {
   local profile
   profile=$1
