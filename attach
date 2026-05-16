@@ -19,7 +19,7 @@ main() {
     exit 1
   fi
   host_add "$1" "$2" "$3" "$4"
-  exec "$ROOT_DIR/host" "$1"
+  exec "$ROOT_DIR/status" "$1"
 }
 
 main "$@"

@@ -19,7 +19,7 @@ main() {
     exit 1
   fi
   host_remove "$1" "$2"
-  exec "$ROOT_DIR/host" "$1"
+  exec "$ROOT_DIR/status" "$1"
 }
 
 main "$@"
