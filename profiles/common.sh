@@ -9,7 +9,15 @@ profile_hosts_file() {
 }
 
 profile_known_hosts_file() {
-  printf '%s/known_hosts_%s\n' "$MARIONETTE_STATE_DIR" "$1"
+  printf '%s/known_hosts\n' "$(profile_dir "$1")"
+}
+
+profile_ensure_known_hosts_file() {
+  local known_hosts
+  known_hosts=$(profile_known_hosts_file "$1")
+  if [ ! -f "$known_hosts" ]; then
+    : >"$known_hosts"
+  fi
 }
 
 profile_exists() {
@@ -64,6 +72,7 @@ profile_create() {
   name=$1
   mkdir -p "$(profile_dir "$name")"
   : >"$(profile_hosts_file "$name")"
+  : >"$(profile_known_hosts_file "$name")"
 }
 
 profile_remove() {

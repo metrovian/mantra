@@ -75,8 +75,8 @@ host_write_ssh_config() {
   profile=$1
   output=$2
   known_hosts=$(profile_known_hosts_file "$profile")
+  profile_ensure_known_hosts_file "$profile"
   : >"$output"
-  : >"$known_hosts"
   while IFS=$'\t' read -r alias user hostname; do
     [ -n "$alias" ] || continue
     cat >>"$output" <<EOF
