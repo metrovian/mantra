@@ -1,7 +1,7 @@
 validate_name() {
   case "$1" in
     ""|*[!a-zA-Z0-9._-]*)
-      die "invalid name: $1"
+      output_die "invalid name: $1"
       ;;
   esac
 }
@@ -13,22 +13,22 @@ validate_names() {
   done
 }
 
-require_arg_count() {
+validate_require_arg_count() {
   local actual
   local expected
   actual=$1
   expected=$2
   if [ "$actual" -ne "$expected" ]; then
-    die "usage: $3"
+    output_die "usage: $3"
   fi
 }
 
-require_arg_max() {
+validate_require_arg_max() {
   local actual
   local maximum
   actual=$1
   maximum=$2
   if [ "$actual" -gt "$maximum" ]; then
-    die "usage: $3"
+    output_die "usage: $3"
   fi
 }

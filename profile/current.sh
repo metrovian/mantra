@@ -12,7 +12,7 @@ source "$ROOT_DIR/utils/pair.sh"
 
 main() {
   local current
-  marionette_prepare
+  path_prepare
   pair_reset
   pair_set_title current
   if current=$(current_profile); then

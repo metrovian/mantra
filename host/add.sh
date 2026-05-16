@@ -12,15 +12,15 @@ source "$ROOT_DIR/utils/validate.sh"
 source "$ROOT_DIR/utils/ssh.sh"
 
 main() {
-  marionette_prepare
-  require_arg_count "$#" 4 "config host add <profile> <alias> <user> <hostname>"
+  path_prepare
+  validate_require_arg_count "$#" 4 "config host add <profile> <alias> <user> <hostname>"
   validate_names "$1" "$2" "$3"
   require_profile "$1"
   if host_exists "$1" "$2"; then
-    die "host already exists: $2"
+    output_die "host already exists: $2"
   fi
   add_host "$1" "$2" "$3" "$4"
-  log "host added: $2"
+  output_log "host added: $2"
 }
 
 main "$@"

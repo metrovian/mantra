@@ -16,7 +16,7 @@ require_host() {
   profile=$1
   alias=$2
   if ! host_exists "$profile" "$alias"; then
-    die "host not found: $alias"
+    output_die "host not found: $alias"
   fi
 }
 

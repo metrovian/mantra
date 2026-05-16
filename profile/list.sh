@@ -13,7 +13,7 @@ source "$ROOT_DIR/utils/table.sh"
 main() {
   local current
   local name
-  marionette_prepare
+  path_prepare
   current=""
   if current=$(current_profile); then
     :

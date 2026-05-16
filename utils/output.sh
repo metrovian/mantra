@@ -1,8 +1,8 @@
-log() {
+output_log() {
   printf '%s\n' "$*"
 }
 
-die() {
+output_die() {
   printf '%s\n' "$*" >&2
   exit 1
 }

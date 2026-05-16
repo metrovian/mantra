@@ -14,8 +14,8 @@ source "$ROOT_DIR/utils/table.sh"
 
 main() {
   local profile
-  marionette_prepare
-  require_arg_max "$#" 1 "config host list [profile]"
+  path_prepare
+  validate_require_arg_max "$#" 1 "config host list [profile]"
   if [ "$#" -eq 1 ]; then
     profile=$1
   else
