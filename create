@@ -6,7 +6,6 @@ source "$ROOT_DIR/utils/source.sh"
 source_modules \
   utils/output.sh \
   utils/path.sh \
-  utils/table.sh \
   utils/validate.sh \
   profiles/common.sh \
   hosts/common.sh
@@ -19,7 +18,7 @@ main() {
     exit 1
   fi
   profile_create "$1"
-  profile_print_table
+  exec "$ROOT_DIR/profile"
 }
 
 main "$@"

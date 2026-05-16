@@ -6,7 +6,6 @@ source "$ROOT_DIR/utils/source.sh"
 source_modules \
   utils/output.sh \
   utils/path.sh \
-  utils/table.sh \
   utils/validate.sh \
   profiles/common.sh \
   hosts/common.sh
@@ -20,7 +19,7 @@ main() {
   fi
   profile_clear_current_if_selected "$1"
   profile_remove "$1"
-  profile_print_table
+  exec "$ROOT_DIR/profile"
 }
 
 main "$@"
