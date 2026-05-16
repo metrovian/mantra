@@ -6,7 +6,6 @@ source "$ROOT_DIR/utils/source.sh"
 source_modules \
   utils/output.sh \
   utils/path.sh \
-  utils/table.sh \
   utils/validate.sh \
   profiles/common.sh \
   hosts/common.sh
@@ -20,7 +19,7 @@ main() {
     exit 1
   fi
   host_remove "$1" "$2"
-  host_print_table "$1"
+  exec "$ROOT_DIR/host" "$1"
 }
 
 main "$@"

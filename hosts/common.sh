@@ -49,23 +49,6 @@ host_count() {
     "$(profile_hosts_file "$profile")"
 }
 
-host_print_table_row() {
-  local alias
-  local user
-  local hostname
-  alias=$1
-  user=$2
-  hostname=$3
-  table_add_row "$hostname" "$user" "$alias"
-}
-
-host_print_table() {
-  table_reset
-  table_set_headers IP USER ALIAS
-  host_each "$1" host_print_table_row
-  table_print
-}
-
 host_add() {
   local profile
   local alias
