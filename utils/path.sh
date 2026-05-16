@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 marionette_init_paths() {
   MARIONETTE_HOME=${MARIONETTE_HOME:-"$HOME/.config/marionette"}
   MARIONETTE_PROFILES_DIR=$MARIONETTE_HOME/profiles

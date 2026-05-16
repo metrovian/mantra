@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 host_exists() {
   local profile
   local alias
