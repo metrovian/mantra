@@ -12,12 +12,12 @@ main() {
   local current
   path_prepare
   pair_reset
-  pair_set_title current
+  pair_set_title CURRENT
   if current=$(profile_current); then
-    pair_add profile "$current"
-    pair_add path "$(profile_dir "$current")"
+    pair_add PROFILE "$current"
+    pair_add PATH "$(profile_dir "$current")"
   else
-    pair_add profile "(none)"
+    pair_add PROFILE "(none)"
   fi
   pair_print
 }

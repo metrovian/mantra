@@ -17,7 +17,7 @@ main() {
     :
   fi
   table_reset
-  table_set_headers profile current
+  table_set_headers PROFILE CURRENT
   for name in $(profile_list); do
     if [ "$name" = "$current" ]; then
       table_add_row "$name" yes

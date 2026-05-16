@@ -11,6 +11,16 @@ source_modules \
   profiles/common.sh \
   hosts/common.sh
 
+host_add_table_row() {
+  local alias
+  local user
+  local hostname
+  alias=$1
+  user=$2
+  hostname=$3
+  table_add_row "$hostname" "$user" "$alias"
+}
+
 main() {
   local profile
   path_prepare
@@ -22,8 +32,8 @@ main() {
   fi
   profile_require "$profile"
   table_reset
-  table_set_headers alias user hostname
-  host_each "$profile" table_add_row
+  table_set_headers IP USER ALIAS
+  host_each "$profile" host_add_table_row
   table_print
 }
 
