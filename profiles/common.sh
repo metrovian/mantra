@@ -65,7 +65,7 @@ profile_list() {
   done
 }
 
-profile_create() {
+profile_add() {
   local name
   name=$1
   mkdir -p "$(profile_dir "$name")"

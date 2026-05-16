@@ -17,7 +17,7 @@ main() {
   if profile_exists "$1"; then
     exit 1
   fi
-  profile_create "$1"
+  profile_add "$1"
   exec "$ROOT_DIR/profile"
 }
 
