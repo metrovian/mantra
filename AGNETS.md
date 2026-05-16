@@ -36,29 +36,27 @@ generation.
 
 ## current command direction
 
-- `run` is the user-facing entry point
-- common flow should stay in `run`
+- the user-facing entry point does not need to be named `run`
+- keep the main command flow in the entry point easy to read
+- split profile and host behavior into top-level `profile` and `host` areas
 - platform-specific helper functions belong in `abstracts/<os>.sh`
 - macOS and Linux are the primary targets
-- load the platform module before common helpers and checks
-- keep command flow aligned with profile operations: `current`, `hosts`,
-  `profiles`
+- load the platform module before common helpers
+- keep command flow aligned with profile operations: `current`, `host`,
+  `profile`
 
 ## abstract layers
 
-- `inspect` is for current state, configured values, and active checks such as
-  the active profile and resolved SSH target details
-- `lookup` is for local table or data lookups such as host aliases, profile
-  entries, and derived target mappings
-- `resolve` is for name and address resolution such as SSH host expansion,
-  `HostName` lookup, and profile-scoped address selection
-- `network` is for shared subnet math, host range iteration, and related
-  helpers when those capabilities are required
+- `inspect` is for current state and configured values such as the active
+  profile and installed ssh host entries
+- `lookup` is for local data lookups such as profile names, host aliases, and
+  profile-scoped host mappings
+- `resolve` is for name and address resolution such as `HostName` lookup and
+  profile-selected target values
 - keep these boundaries explicit when adding new helper functions
-- keep these boundaries as function groups inside each platform module even
-  when they share one file
-- prefer putting OS-specific SSH config inspection and probe wrappers in
-  `inspect` rather than in command files
+- keep these boundaries as function groups inside each platform module
+- prefer putting OS-specific ssh config inspection in `inspect` rather than in
+  command files
 
 ## file ownership
 
