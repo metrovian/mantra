@@ -23,6 +23,7 @@ usage:
   config host list [profile]
   config host add <profile> <alias> <user> <hostname>
   config host remove <profile> <alias>
+  config <alias> [ssh args...]
 EOF
 }
 
@@ -47,8 +48,7 @@ main() {
       bash "$ROOT_DIR/host/main.sh" "$@"
       ;;
     *)
-      usage
-      exit 1
+      run_host_alias "$1" "${@:2}"
       ;;
   esac
 }
