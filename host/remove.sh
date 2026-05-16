@@ -14,7 +14,7 @@ ROOT_DIR=$(
 
 main() {
   if [ "$#" -ne 2 ]; then
-    die "usage: marionette host remove <profile> <alias>"
+    die "usage: config host remove <profile> <alias>"
   fi
   marionette_init_paths
   validate_name "$1"

@@ -23,11 +23,13 @@ list_hosts() {
 add_host() {
   local profile
   local alias
+  local user
   local hostname
   profile=$1
   alias=$2
-  hostname=$3
-  printf '%s\t%s\n' "$alias" "$hostname" >>"$(profile_hosts_file "$profile")"
+  user=$3
+  hostname=$4
+  printf '%s\t%s\t%s\n' "$alias" "$user" "$hostname" >>"$(profile_hosts_file "$profile")"
 }
 
 remove_host() {

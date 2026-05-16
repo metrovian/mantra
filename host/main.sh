@@ -9,9 +9,9 @@ ROOT_DIR=$(
 usage() {
   cat <<'EOF'
 usage:
-  marionette host list [profile]
-  marionette host add <profile> <alias> <hostname>
-  marionette host remove <profile> <alias>
+  config host list [profile]
+  config host add <profile> <alias> <user> <hostname>
+  config host remove <profile> <alias>
 EOF
 }
 

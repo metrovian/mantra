@@ -15,9 +15,12 @@ ROOT_DIR=$(
 main() {
   local profile
   local row
+  local alias
+  local user
+  local hostname
   marionette_init_paths
   if [ "$#" -gt 1 ]; then
-    die "usage: marionette host list [profile]"
+    die "usage: config host list [profile]"
   fi
   if [ "$#" -eq 1 ]; then
     profile=$1
@@ -28,10 +31,10 @@ main() {
     die "profile not found: $profile"
   fi
   table_reset
-  table_set_headers alias hostname
-  while IFS= read -r row; do
-    [ -n "$row" ] || continue
-    table_add_row $(printf '%s\n' "$row" | awk -F '\t' '{ print $1, $2 }')
+  table_set_headers alias user hostname
+  while IFS=$'\t' read -r alias user hostname; do
+    [ -n "$alias" ] || continue
+    table_add_row "$alias" "$user" "$hostname"
   done <<EOF
 $(list_hosts "$profile")
 EOF
