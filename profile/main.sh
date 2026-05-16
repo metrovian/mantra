@@ -9,10 +9,10 @@ ROOT_DIR=$(
 usage() {
   cat <<'EOF'
 usage:
-  marionette profile list
-  marionette profile add <name>
-  marionette profile remove <name>
-  marionette profile switch <name>
+  config profile list
+  config profile add <name>
+  config profile remove <name>
+  config profile switch <name>
 EOF
 }
 

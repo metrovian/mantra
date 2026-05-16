@@ -13,7 +13,7 @@ ROOT_DIR=$(
 
 main() {
   if [ "$#" -ne 1 ]; then
-    die "usage: marionette profile switch <name>"
+    die "usage: config profile switch <name>"
   fi
   marionette_init_paths
   validate_name "$1"
