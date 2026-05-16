@@ -9,7 +9,7 @@ source "$ROOT_DIR/utils/output.sh"
 source "$ROOT_DIR/utils/path.sh"
 source "$ROOT_DIR/profile/common.sh"
 source "$ROOT_DIR/utils/validate.sh"
-source "$ROOT_DIR/utils/ssh.sh"
+source "$ROOT_DIR/host/common.sh"
 source "$ROOT_DIR/utils/table.sh"
 
 main() {
@@ -24,7 +24,7 @@ main() {
   profile_require "$profile"
   table_reset
   table_set_headers alias user hostname
-  each_host "$profile" table_add_row
+  host_each "$profile" table_add_row
   table_print
 }
 

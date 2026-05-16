@@ -9,7 +9,7 @@ source "$ROOT_DIR/utils/output.sh"
 source "$ROOT_DIR/utils/path.sh"
 source "$ROOT_DIR/profile/common.sh"
 source "$ROOT_DIR/utils/validate.sh"
-source "$ROOT_DIR/utils/ssh.sh"
+source "$ROOT_DIR/host/common.sh"
 
 main() {
   path_prepare
@@ -19,7 +19,7 @@ main() {
   if host_exists "$1" "$2"; then
     output_die "host already exists: $2"
   fi
-  add_host "$1" "$2" "$3" "$4"
+  host_add "$1" "$2" "$3" "$4"
   output_log "host added: $2"
 }
 

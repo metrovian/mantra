@@ -9,7 +9,7 @@ ROOT_DIR=$(
 source "$ROOT_DIR/utils/output.sh"
 source "$ROOT_DIR/utils/path.sh"
 source "$ROOT_DIR/profile/common.sh"
-source "$ROOT_DIR/utils/ssh.sh"
+source "$ROOT_DIR/host/common.sh"
 
 usage() {
   cat <<'EOF'
@@ -24,7 +24,7 @@ main() {
     usage
     exit 1
   fi
-  run_host_alias "$@"
+  host_run_alias "$@"
 }
 
 main "$@"
