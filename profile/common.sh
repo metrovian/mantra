@@ -37,17 +37,13 @@ profile_set_current() {
   printf '%s\n' "$1" >"$MARIONETTE_CURRENT_PROFILE_FILE"
 }
 
-profile_clear_current() {
-  rm -f "$MARIONETTE_CURRENT_PROFILE_FILE"
-}
-
 profile_clear_current_if_selected() {
   local current
   local profile
   profile=$1
   current=$(profile_current) || return 0
   if [ "$current" = "$profile" ]; then
-    profile_clear_current
+    rm -f "$MARIONETTE_CURRENT_PROFILE_FILE"
   fi
 }
 
