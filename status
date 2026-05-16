@@ -11,20 +11,7 @@ source_modules \
   profiles/common.sh \
   hosts/common.sh
 
-status_add_profile_row() {
-  local name
-  local selected
-  local profile
-  name=$1
-  selected=$2
-  profile=$name
-  if [ "$name" = "$selected" ]; then
-    profile="$name*"
-  fi
-  table_add_row "$profile" "$(host_count "$name")"
-}
-
-host_add_table_row() {
+status_add_host_row() {
   local alias
   local user
   local hostname
@@ -35,31 +22,34 @@ host_add_table_row() {
 }
 
 main() {
-  local current
-  local profile
+  local selected
   local name
+  local profile
   path_prepare
   validate_require_arg_max "$#" 1 "[profile]"
-  current=$(profile_current) || current=
   if [ "$#" -eq 1 ]; then
-    profile=$1
+    selected=$1
   else
-    profile=$current
+    selected=$(profile_current) || selected=
   fi
   table_reset
   table_set_headers PROFILE HOST
   for name in $(profile_list); do
-    status_add_profile_row "$name" "$profile"
+    profile=$name
+    if [ "$name" = "$selected" ]; then
+      profile="$name*"
+    fi
+    table_add_row "$profile" "$(host_count "$name")"
   done
   table_print
-  if [ -z "$profile" ]; then
+  if [ -z "$selected" ]; then
     exit 0
   fi
-  profile_require "$profile"
+  profile_require "$selected"
   echo
   table_reset
   table_set_headers IP USER ALIAS
-  host_each "$profile" host_add_table_row
+  host_each "$selected" status_add_host_row
   table_print
 }
 
