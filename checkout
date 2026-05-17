@@ -2,6 +2,11 @@
 set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+usage() {
+  echo "$0 <name>" >&2
+  exit 1
+}
+
 source_modules() {
   local module
   for module in "$@"; do
@@ -17,7 +22,7 @@ source_modules \
 
 main() {
   path_prepare
-  validate_require_arg_count "$#" 1 "<name>"
+  validate_require_arg_count "$#" 1 || usage
   validate_names "$1"
   if ! profile_exists "$1"; then
     exit 1
