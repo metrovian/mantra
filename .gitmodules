@@ -4,3 +4,6 @@
 [submodule "marionette"]
 	path = marionette
 	url = https://github.com/metrovian/marionette.git
+[submodule "recall"]
+	path = recall
+	url = https://github.com/metrovian/recall
