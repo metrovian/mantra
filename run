@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 
 source_modules() {
@@ -26,7 +26,12 @@ source_modules \
   prepares/local.sh \
   checks/local.sh \
   checks/neighbors.sh
-prepare_environment_context
-prepare_local_context
-check_local
-check_neighbors
+
+main() {
+  prepare_environment_context
+  prepare_local_context
+  check_local
+  check_neighbors
+}
+
+main "$@"
