@@ -1,5 +1,5 @@
 ## MANTRA
 - Hostname resolution
 - Address resolution
-- Remote control management ( OpenSSH )
+- Connection management ( OpenSSH )
 <br></br>
