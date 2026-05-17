@@ -1,5 +1,5 @@
 ## MANTRA
 - Hostname management ( OpenSSH )
-- Hostname resolution ( mDNS )
+- Hostname resolution
 - Address resolution
 <br></br>
