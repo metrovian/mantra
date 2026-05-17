@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
-git submodule foreach --recursive "git reset --hard"
-git submodule foreach --recursive "git clean -fd"
+git submodule foreach --recursive '
+  git reset --hard --quiet &&
+  git clean -fd
+'
 git submodule update --init --recursive
