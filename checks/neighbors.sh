@@ -96,7 +96,13 @@ check_neighbors() {
     hostname_values+=("$hostname")
   done <"$mdns_pipe"
   for ((index = 0; index < ${#active_hosts[@]}; index++)); do
-    IFS=$'\t' read -r ip mac rtt <<<"${active_hosts[$index]}"
+    local active_row
+    local active_rest
+    active_row="${active_hosts[$index]}"
+    ip="${active_row%%$'\t'*}"
+    active_rest="${active_row#*$'\t'}"
+    mac="${active_rest%%$'\t'*}"
+    rtt="${active_rest#*$'\t'}"
     hostname=""
     for ((hostname_index = 0; hostname_index < ${#hostname_ips[@]}; hostname_index++)); do
       if [[ "${hostname_ips[$hostname_index]}" == "$ip" ]]; then
@@ -159,9 +165,9 @@ check_neighbor_ping_probe() {
 }
 
 check_neighbor_ping_rtt() {
-  awk -F'time=' 'NF > 1 {
+  printf '%s\n' "$1" | awk -F'time=' 'NF > 1 {
     split($2, parts, /[[:space:]]|ms/)
     printf "%.0f ms\n", parts[1]
     exit
-  }' <<<"$1"
+  }'
 }
