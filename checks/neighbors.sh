@@ -16,34 +16,40 @@ check_neighbors() {
   local progress_total
   local progress_current
   local index
-  local line
   local hostname_index
   local mac_index
   local ping_index
   local ping_result
+  local first_int
+  local last_int
+  local host_int
   local pipe_dir
-  local hosts_pipe
   local ping_pipe
   local mac_pipe
   local mdns_pipe
+  first_int="$(network_ip_to_int "$SUBNET_FIRST")"
+  last_int="$(network_ip_to_int "$SUBNET_LAST")"
+  for ((host_int = first_int; host_int <= last_int; host_int++)); do
+    ip="$(network_int_to_ip "$host_int")"
+    if [[ "$ip" != "$ME" ]]; then
+      hosts+=("$ip")
+    fi
+  done
+  total_hosts=${#hosts[@]}
+  table_reset
+  table_set_headers "IP" "MAC" "NAME" "RTT"
+  if ((total_hosts == 0)); then
+    table_print
+    return
+  fi
+  progress_total=$((total_hosts + 1))
+  progress_current=0
   pipe_dir="$(mktemp -d)"
-  hosts_pipe="$pipe_dir/hosts"
   ping_pipe="$pipe_dir/ping"
   mac_pipe="$pipe_dir/mac"
   mdns_pipe="$pipe_dir/mdns"
-  mkfifo "$hosts_pipe" "$ping_pipe" "$mac_pipe" "$mdns_pipe"
+  mkfifo "$ping_pipe" "$mac_pipe" "$mdns_pipe"
   trap "rm -rf '$pipe_dir'" RETURN
-  network_subnet_hosts >"$hosts_pipe" &
-  while IFS= read -r line; do
-    if [[ "$line" != "$ME" ]]; then
-      hosts+=("$line")
-    fi
-  done <"$hosts_pipe"
-  total_hosts=${#hosts[@]}
-  progress_total=$((total_hosts + 1))
-  progress_current=0
-  table_reset
-  table_set_headers "IP" "MAC" "NAME" "RTT"
   check_neighbor_ping_table "${hosts[@]}" >"$ping_pipe" &
   while IFS=$'\t' read -r ip ping_result rtt; do
     ping_ips+=("$ip")
