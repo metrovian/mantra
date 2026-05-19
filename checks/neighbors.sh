@@ -16,6 +16,7 @@ check_neighbors() {
   local progress_total
   local progress_current
   local index
+  local ping_done_count
   local hostname_index
   local mac_index
   local ping_index
@@ -24,7 +25,7 @@ check_neighbors() {
   local last_int
   local host_int
   local pipe_dir
-  local ping_pipe
+  local ping_dir
   local mac_pipe
   local mdns_pipe
   first_int="$(network_ip_to_int "$SUBNET_FIRST")"
@@ -45,19 +46,37 @@ check_neighbors() {
   progress_total=$((total_hosts + 1))
   progress_current=0
   pipe_dir="$(mktemp -d)"
-  ping_pipe="$pipe_dir/ping"
+  ping_dir="$pipe_dir/ping"
   mac_pipe="$pipe_dir/mac"
   mdns_pipe="$pipe_dir/mdns"
-  mkfifo "$ping_pipe" "$mac_pipe" "$mdns_pipe"
+  mkdir "$ping_dir"
+  mkfifo "$mac_pipe" "$mdns_pipe"
   trap "rm -rf '$pipe_dir'" RETURN
-  check_neighbor_ping_table "${hosts[@]}" >"$ping_pipe" &
-  while IFS=$'\t' read -r ip ping_result rtt; do
+  for ((index = 0; index < ${#hosts[@]}; index++)); do
+    ip="${hosts[$index]}"
+    check_neighbor_ping_capture "$index" "$ip" "$ping_dir" &
+  done
+  ping_done_count=0
+  while ((ping_done_count < total_hosts)); do
+    ping_done_count=0
+    for ((index = 0; index < ${#hosts[@]}; index++)); do
+      if [[ -f "$ping_dir/$index.out" ]]; then
+        ping_done_count=$((ping_done_count + 1))
+      fi
+    done
+    check_neighbors_progress_count "ping" "$ping_done_count" "$progress_total"
+    if ((ping_done_count < total_hosts)); then
+      sleep 0.1
+    fi
+  done
+  wait
+  for ((index = 0; index < ${#hosts[@]}; index++)); do
+    IFS=$'\t' read -r ip ping_result rtt <"$ping_dir/$index.out"
     ping_ips+=("$ip")
     ping_results+=("$ping_result")
     ping_rtts+=("$rtt")
-    progress_current=$((progress_current + 1))
-    check_neighbors_progress_count "ping" "$progress_current" "$progress_total"
-  done <"$ping_pipe"
+  done
+  progress_current=$total_hosts
   lookup_mac_table >"$mac_pipe" &
   while IFS=$'\t' read -r ip mac; do
     [[ -n "${ip:-}" && -n "${mac:-}" ]] || continue
@@ -154,6 +173,17 @@ check_neighbor_ping_table() {
     fi
   done
   wait
+}
+
+check_neighbor_ping_capture() {
+  local index
+  local ip
+  local output_dir
+  index="$1"
+  ip="$2"
+  output_dir="$3"
+  check_neighbor_ping_probe "$ip" >"$output_dir/$index.tmp"
+  mv "$output_dir/$index.tmp" "$output_dir/$index.out"
 }
 
 check_neighbor_ping_probe() {
