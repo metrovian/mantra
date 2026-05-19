@@ -77,12 +77,14 @@ check_neighbors() {
     ping_rtts+=("$rtt")
   done
   progress_current=$total_hosts
-  lookup_mac_table >"$mac_pipe" &
-  while IFS=$'\t' read -r ip mac; do
-    [[ -n "${ip:-}" && -n "${mac:-}" ]] || continue
-    mac_ips+=("$ip")
-    mac_values+=("$mac")
-  done <"$mac_pipe"
+  if [[ "$IFACE" != "manual" ]]; then
+    lookup_mac_table >"$mac_pipe" &
+    while IFS=$'\t' read -r ip mac; do
+      [[ -n "${ip:-}" && -n "${mac:-}" ]] || continue
+      mac_ips+=("$ip")
+      mac_values+=("$mac")
+    done <"$mac_pipe"
+  fi
   progress_current=$((progress_current + 1))
   for ((index = 0; index < ${#hosts[@]}; index++)); do
     ip="${hosts[$index]}"
@@ -113,13 +115,15 @@ check_neighbors() {
   fi
   progress_total=${#active_hosts[@]}
   progress_current=0
-  check_neighbors_progress_count "mdns" "$progress_current" "$progress_total"
-  inspect_mdns_browse_table >"$mdns_pipe" &
-  while IFS=$'\t' read -r ip hostname; do
-    [[ -n "${ip:-}" && -n "${hostname:-}" ]] || continue
-    hostname_ips+=("$ip")
-    hostname_values+=("$hostname")
-  done <"$mdns_pipe"
+  if [[ "$IFACE" != "manual" ]]; then
+    check_neighbors_progress_count "mdns" "$progress_current" "$progress_total"
+    inspect_mdns_browse_table >"$mdns_pipe" &
+    while IFS=$'\t' read -r ip hostname; do
+      [[ -n "${ip:-}" && -n "${hostname:-}" ]] || continue
+      hostname_ips+=("$ip")
+      hostname_values+=("$hostname")
+    done <"$mdns_pipe"
+  fi
   for ((index = 0; index < ${#active_hosts[@]}; index++)); do
     local active_row
     local active_rest
