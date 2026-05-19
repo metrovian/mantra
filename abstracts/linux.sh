@@ -12,7 +12,12 @@ inspect_network() {
 }
 
 inspect_host_reachable() {
-  ping -c 1 -W "$INSPECT_TIMEOUT" "$1"
+  local wait_seconds
+  wait_seconds="${INSPECT_TIMEOUT%%.*}"
+  if [[ -z "$wait_seconds" ]] || ((wait_seconds < 1)); then
+    wait_seconds=1
+  fi
+  ping -c 1 -W "$wait_seconds" "$1"
 }
 
 inspect_mdns_browse_table() {

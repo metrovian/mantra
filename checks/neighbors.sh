@@ -43,7 +43,10 @@ check_neighbors() {
     table_print
     return
   fi
-  progress_total=$((total_hosts + 1))
+  progress_total=$total_hosts
+  if [[ "$IFACE" != "manual" ]]; then
+    progress_total=$((progress_total + 1))
+  fi
   progress_current=0
   pipe_dir="$(mktemp -d)"
   ping_dir="$pipe_dir/ping"
@@ -85,7 +88,9 @@ check_neighbors() {
       mac_values+=("$mac")
     done <"$mac_pipe"
   fi
-  progress_current=$((progress_current + 1))
+  if [[ "$IFACE" != "manual" ]]; then
+    progress_current=$((progress_current + 1))
+  fi
   for ((index = 0; index < ${#hosts[@]}; index++)); do
     ip="${hosts[$index]}"
     mac=""
