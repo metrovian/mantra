@@ -21,28 +21,43 @@ check_neighbors() {
   local mac_index
   local ping_index
   local ping_result
+  local pipe_dir
+  local hosts_pipe
+  local ping_pipe
+  local mac_pipe
+  local mdns_pipe
+  pipe_dir="$(mktemp -d)"
+  hosts_pipe="$pipe_dir/hosts"
+  ping_pipe="$pipe_dir/ping"
+  mac_pipe="$pipe_dir/mac"
+  mdns_pipe="$pipe_dir/mdns"
+  mkfifo "$hosts_pipe" "$ping_pipe" "$mac_pipe" "$mdns_pipe"
+  trap "rm -rf '$pipe_dir'" RETURN
+  network_subnet_hosts >"$hosts_pipe" &
   while IFS= read -r line; do
     if [[ "$line" != "$ME" ]]; then
       hosts+=("$line")
     fi
-  done < <(network_subnet_hosts)
+  done <"$hosts_pipe"
   total_hosts=${#hosts[@]}
   progress_total=$((total_hosts + 1))
   progress_current=0
   table_reset
   table_set_headers "IP" "MAC" "NAME" "RTT"
+  check_neighbor_ping_table "${hosts[@]}" >"$ping_pipe" &
   while IFS=$'\t' read -r ip ping_result rtt; do
     ping_ips+=("$ip")
     ping_results+=("$ping_result")
     ping_rtts+=("$rtt")
     progress_current=$((progress_current + 1))
     check_neighbors_progress_count "ping" "$progress_current" "$progress_total"
-  done < <(check_neighbor_ping_table "${hosts[@]}")
+  done <"$ping_pipe"
+  lookup_mac_table >"$mac_pipe" &
   while IFS=$'\t' read -r ip mac; do
     [[ -n "${ip:-}" && -n "${mac:-}" ]] || continue
     mac_ips+=("$ip")
     mac_values+=("$mac")
-  done < <(lookup_mac_table)
+  done <"$mac_pipe"
   progress_current=$((progress_current + 1))
   for ((index = 0; index < ${#hosts[@]}; index++)); do
     ip="${hosts[$index]}"
@@ -74,11 +89,12 @@ check_neighbors() {
   progress_total=${#active_hosts[@]}
   progress_current=0
   check_neighbors_progress_count "mdns" "$progress_current" "$progress_total"
+  inspect_mdns_browse_table >"$mdns_pipe" &
   while IFS=$'\t' read -r ip hostname; do
     [[ -n "${ip:-}" && -n "${hostname:-}" ]] || continue
     hostname_ips+=("$ip")
     hostname_values+=("$hostname")
-  done < <(inspect_mdns_browse_table)
+  done <"$mdns_pipe"
   for ((index = 0; index < ${#active_hosts[@]}; index++)); do
     IFS=$'\t' read -r ip mac rtt <<<"${active_hosts[$index]}"
     hostname=""
