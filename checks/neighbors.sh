@@ -15,11 +15,9 @@ check_neighbors() {
   local total_hosts
   local progress_total
   local progress_current
+  local ping_row
   local index
   local ping_done_count
-  local hostname_index
-  local mac_index
-  local ping_index
   local ping_result
   local first_int
   local last_int
@@ -83,33 +81,23 @@ check_neighbors() {
   progress_current=$total_hosts
   if [[ "$IFACE" != "manual" ]]; then
     lookup_mac_table >"$mac_pipe" &
-    while IFS=$'\t' read -r ip mac; do
-      [[ -n "${ip:-}" && -n "${mac:-}" ]] || continue
-      mac_ips+=("$ip")
-      mac_values+=("$mac")
-    done <"$mac_pipe"
+    check_neighbors_collect_pairs \
+      "$mac_pipe" \
+      mac_ips \
+      mac_values
   fi
   if [[ "$IFACE" != "manual" ]]; then
     progress_current=$((progress_current + 1))
   fi
   for ((index = 0; index < ${#hosts[@]}; index++)); do
     ip="${hosts[$index]}"
-    mac=""
-    rtt="-"
-    ping_result=0
-    for ((ping_index = 0; ping_index < ${#ping_ips[@]}; ping_index++)); do
-      if [[ "${ping_ips[$ping_index]}" == "$ip" ]]; then
-        ping_result="${ping_results[$ping_index]}"
-        rtt="${ping_rtts[$ping_index]}"
-        break
-      fi
-    done
-    for ((mac_index = 0; mac_index < ${#mac_ips[@]}; mac_index++)); do
-      if [[ "${mac_ips[$mac_index]}" == "$ip" ]]; then
-        mac="${mac_values[$mac_index]}"
-        break
-      fi
-    done
+    ping_row="$(check_neighbors_find_ping \
+      ping_ips \
+      ping_results \
+      ping_rtts \
+      "$ip")"
+    IFS=$'\t' read -r ping_result rtt <<<"$ping_row"
+    mac="$(check_neighbors_find_value mac_ips mac_values "$ip")"
     if [[ "$ping_result" -eq 1 ]] || [[ -n "${mac:-}" ]]; then
       active_hosts+=("$ip"$'\t'"${mac:--}"$'\t'"${rtt:--}")
     fi
@@ -124,11 +112,10 @@ check_neighbors() {
   if [[ "$IFACE" != "manual" ]]; then
     check_neighbors_progress_count "mdns" "$progress_current" "$progress_total"
     inspect_mdns_browse_table >"$mdns_pipe" &
-    while IFS=$'\t' read -r ip hostname; do
-      [[ -n "${ip:-}" && -n "${hostname:-}" ]] || continue
-      hostname_ips+=("$ip")
-      hostname_values+=("$hostname")
-    done <"$mdns_pipe"
+    check_neighbors_collect_pairs \
+      "$mdns_pipe" \
+      hostname_ips \
+      hostname_values
   fi
   for ((index = 0; index < ${#active_hosts[@]}; index++)); do
     local active_row
@@ -138,13 +125,10 @@ check_neighbors() {
     active_rest="${active_row#*$'\t'}"
     mac="${active_rest%%$'\t'*}"
     rtt="${active_rest#*$'\t'}"
-    hostname=""
-    for ((hostname_index = 0; hostname_index < ${#hostname_ips[@]}; hostname_index++)); do
-      if [[ "${hostname_ips[$hostname_index]}" == "$ip" ]]; then
-        hostname="${hostname_values[$hostname_index]}"
-        break
-      fi
-    done
+    hostname="$(check_neighbors_find_value \
+      hostname_ips \
+      hostname_values \
+      "$ip")"
     if [[ -z "${hostname:-}" ]]; then
       hostname="$(resolve_mdns_hostname "$ip")"
     fi
@@ -166,6 +150,71 @@ check_neighbors_progress_count() {
 
 check_neighbors_progress_done() {
   printf '\r\033[2K' >&2
+}
+
+check_neighbors_collect_pairs() {
+  local input_path
+  local keys_name
+  local values_name
+  local key
+  local value
+  input_path="$1"
+  keys_name="$2"
+  values_name="$3"
+  while IFS=$'\t' read -r key value; do
+    [[ -n "${key:-}" && -n "${value:-}" ]] || continue
+    eval "$keys_name+=(\"\$key\")"
+    eval "$values_name+=(\"\$value\")"
+  done <"$input_path"
+}
+
+check_neighbors_find_value() {
+  local keys_name
+  local values_name
+  local target
+  local count
+  local index
+  local key
+  local value
+  keys_name="$1"
+  values_name="$2"
+  target="$3"
+  eval "count=\${#$keys_name[@]}"
+  for ((index = 0; index < count; index++)); do
+    eval "key=\${$keys_name[$index]}"
+    if [[ "$key" == "$target" ]]; then
+      eval "value=\${$values_name[$index]}"
+      printf '%s\n' "$value"
+      return
+    fi
+  done
+}
+
+check_neighbors_find_ping() {
+  local keys_name
+  local results_name
+  local rtts_name
+  local target
+  local count
+  local index
+  local key
+  local result
+  local rtt
+  keys_name="$1"
+  results_name="$2"
+  rtts_name="$3"
+  target="$4"
+  eval "count=\${#$keys_name[@]}"
+  for ((index = 0; index < count; index++)); do
+    eval "key=\${$keys_name[$index]}"
+    if [[ "$key" == "$target" ]]; then
+      eval "result=\${$results_name[$index]}"
+      eval "rtt=\${$rtts_name[$index]}"
+      printf '%s\t%s\n' "$result" "$rtt"
+      return
+    fi
+  done
+  printf '0\t-\n'
 }
 
 check_neighbor_ping_capture() {
