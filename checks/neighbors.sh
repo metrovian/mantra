@@ -24,18 +24,13 @@ check_neighbors() {
   local first_int
   local last_int
   local host_int
-  local me_int
   local pipe_dir
   local ping_dir
   local mac_pipe
   local mdns_pipe
   first_int="$(network_ip_to_int "$SUBNET_FIRST")"
   last_int="$(network_ip_to_int "$SUBNET_LAST")"
-  me_int="$(network_ip_to_int "$ME")"
-  total_hosts=$((last_int - first_int + 1))
-  if ((me_int >= first_int && me_int <= last_int)); then
-    total_hosts=$((total_hosts - 1))
-  fi
+  total_hosts="$(network_subnet_host_count "$SUBNET_FIRST" "$SUBNET_LAST" "$ME")"
   table_reset
   table_set_headers "IP" "MAC" "NAME" "RTT"
   if ((total_hosts == 0)); then

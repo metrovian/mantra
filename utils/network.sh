@@ -59,6 +59,23 @@ network_subnet_last_host() {
   network_int_to_ip "$((broadcast_int - 1))"
 }
 
+network_subnet_host_count() {
+  local first_int
+  local last_int
+  local exclude_int
+  local count
+  first_int="$(network_ip_to_int "$1")"
+  last_int="$(network_ip_to_int "$2")"
+  count=$((last_int - first_int + 1))
+  if [[ -n "${3:-}" ]]; then
+    exclude_int="$(network_ip_to_int "$3")"
+    if ((exclude_int >= first_int && exclude_int <= last_int)); then
+      count=$((count - 1))
+    fi
+  fi
+  echo "$count"
+}
+
 network_subnet_hosts() {
   local host_int
   local first_int
