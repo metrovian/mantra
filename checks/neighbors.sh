@@ -168,7 +168,7 @@ check_neighbors_collect_pairs() {
 check_neighbors_collect_mac_pairs() {
   local enabled
   enabled="$1"
-  [[ "$enabled" == "1" ]] || return
+  [[ "$enabled" == "1" ]] || return 0
   lookup_mac_table >"$2" &
   check_neighbors_collect_pairs "$2" "$3" "$4"
 }
@@ -176,7 +176,7 @@ check_neighbors_collect_mac_pairs() {
 check_neighbors_collect_mdns_pairs() {
   local enabled
   enabled="$1"
-  [[ "$enabled" == "1" ]] || return
+  [[ "$enabled" == "1" ]] || return 0
   inspect_mdns_browse_table >"$2" &
   check_neighbors_collect_pairs "$2" "$3" "$4"
 }
@@ -184,14 +184,14 @@ check_neighbors_collect_mdns_pairs() {
 check_neighbors_stage_progress_count() {
   local enabled
   enabled="$1"
-  [[ "$enabled" == "1" ]] || return
+  [[ "$enabled" == "1" ]] || return 0
   check_neighbors_progress_count "$2" "$3" "$4"
 }
 
 check_neighbors_stage_progress_done() {
   local enabled
   enabled="$1"
-  [[ "$enabled" == "1" ]] || return
+  [[ "$enabled" == "1" ]] || return 0
   check_neighbors_progress_done
 }
 
