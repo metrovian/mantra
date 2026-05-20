@@ -24,19 +24,18 @@ check_neighbors() {
   local first_int
   local last_int
   local host_int
+  local me_int
   local pipe_dir
   local ping_dir
   local mac_pipe
   local mdns_pipe
   first_int="$(network_ip_to_int "$SUBNET_FIRST")"
   last_int="$(network_ip_to_int "$SUBNET_LAST")"
-  for ((host_int = first_int; host_int <= last_int; host_int++)); do
-    ip="$(network_int_to_ip "$host_int")"
-    if [[ "$ip" != "$ME" ]]; then
-      hosts+=("$ip")
-    fi
-  done
-  total_hosts=${#hosts[@]}
+  me_int="$(network_ip_to_int "$ME")"
+  total_hosts=$((last_int - first_int + 1))
+  if ((me_int >= first_int && me_int <= last_int)); then
+    total_hosts=$((total_hosts - 1))
+  fi
   table_reset
   table_set_headers "IP" "MAC" "NAME" "RTT"
   if ((total_hosts == 0)); then
@@ -48,6 +47,8 @@ check_neighbors() {
     progress_total=$((progress_total + 1))
   fi
   progress_current=0
+  ping_done_count=0
+  check_neighbors_progress_count "ping" "$ping_done_count" "$progress_total"
   pipe_dir="$(mktemp -d)"
   ping_dir="$pipe_dir/ping"
   mac_pipe="$pipe_dir/mac"
@@ -55,11 +56,16 @@ check_neighbors() {
   mkdir "$ping_dir"
   mkfifo "$mac_pipe" "$mdns_pipe"
   trap "rm -rf '$pipe_dir'" RETURN
-  for ((index = 0; index < ${#hosts[@]}; index++)); do
-    ip="${hosts[$index]}"
+  index=0
+  for ((host_int = first_int; host_int <= last_int; host_int++)); do
+    ip="$(network_int_to_ip "$host_int")"
+    if [[ "$ip" == "$ME" ]]; then
+      continue
+    fi
+    hosts+=("$ip")
     check_neighbor_ping_capture "$index" "$ip" "$ping_dir" &
+    index=$((index + 1))
   done
-  ping_done_count=0
   while ((ping_done_count < total_hosts)); do
     ping_done_count=0
     for ((index = 0; index < ${#hosts[@]}; index++)); do
