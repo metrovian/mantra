@@ -4,6 +4,13 @@ prepare_local_context() {
   else
     inspect_network
   fi
+  if [[ "${IFACE:-}" == "manual" ]]; then
+    NEIGHBOR_MAC_LOOKUP="${NEIGHBOR_MAC_LOOKUP:-0}"
+    NEIGHBOR_MDNS_BROWSE="${NEIGHBOR_MDNS_BROWSE:-0}"
+  else
+    NEIGHBOR_MAC_LOOKUP="${NEIGHBOR_MAC_LOOKUP:-1}"
+    NEIGHBOR_MDNS_BROWSE="${NEIGHBOR_MDNS_BROWSE:-1}"
+  fi
   if [[ -z "${GATEWAY:-}" || -z "${IFACE:-}" || -z "${ME:-}" || -z "${PREFIX:-}" ]]; then
     echo "could not detect gateway or local IPv4 address." >&2
     exit 1
