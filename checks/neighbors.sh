@@ -26,20 +26,17 @@ check_neighbors() {
   local ping_dir
   local mac_pipe
   local mdns_pipe
-  local mac_stage_enabled
-  local mdns_stage_enabled
   first_int="$(network_ip_to_int "$SUBNET_FIRST")"
   last_int="$(network_ip_to_int "$SUBNET_LAST")"
   total_hosts="$(network_subnet_host_count "$SUBNET_FIRST" "$SUBNET_LAST" "$ME")"
-  mac_stage_enabled="${NEIGHBOR_MAC_LOOKUP:-1}"
-  mdns_stage_enabled="${NEIGHBOR_MDNS_BROWSE:-1}"
   table_reset
   table_set_headers "IP" "MAC" "NAME" "RTT"
   if ((total_hosts == 0)); then
     table_print
     return
   fi
-  progress_total=$((total_hosts + mac_stage_enabled))
+  progress_total=$total_hosts
+  [[ -n "${NEIGHBOR_MAC_LOOKUP:-}" ]] && progress_total=$((progress_total + 1))
   progress_current=0
   ping_done_count=0
   check_neighbors_progress_count "ping" "$ping_done_count" "$progress_total"
@@ -81,11 +78,10 @@ check_neighbors() {
   done
   progress_current=$total_hosts
   check_neighbors_collect_mac_pairs \
-    "$mac_stage_enabled" \
     "$mac_pipe" \
     mac_ips \
     mac_values
-  progress_current=$((progress_current + mac_stage_enabled))
+  [[ -n "${NEIGHBOR_MAC_LOOKUP:-}" ]] && progress_current=$((progress_current + 1))
   for ((index = 0; index < ${#hosts[@]}; index++)); do
     ip="${ping_ips[$index]}"
     ping_result="${ping_results[$index]}"
@@ -103,12 +99,10 @@ check_neighbors() {
   progress_total=${#active_hosts[@]}
   progress_current=0
   check_neighbors_stage_progress_count \
-    "$mdns_stage_enabled" \
     "mdns" \
     "$progress_current" \
     "$progress_total"
   check_neighbors_collect_mdns_pairs \
-    "$mdns_stage_enabled" \
     "$mdns_pipe" \
     hostname_ips \
     hostname_values
@@ -118,7 +112,7 @@ check_neighbors() {
       hostname_ips \
       hostname_values \
       "$ip")"
-    if [[ "$mdns_stage_enabled" == "1" ]] && [[ -z "${hostname:-}" ]]; then
+    if [[ -n "${NEIGHBOR_MDNS_BROWSE:-}" ]] && [[ -z "${hostname:-}" ]]; then
       hostname="$(resolve_mdns_hostname "$ip")"
     fi
     table_add_row \
@@ -128,12 +122,11 @@ check_neighbors() {
       "$rtt"
     progress_current=$((progress_current + 1))
     check_neighbors_stage_progress_count \
-      "$mdns_stage_enabled" \
       "mdns" \
       "$progress_current" \
       "$progress_total"
   done
-  check_neighbors_stage_progress_done "$mdns_stage_enabled"
+  check_neighbors_stage_progress_done
   table_print
 }
 
@@ -162,32 +155,24 @@ check_neighbors_collect_pairs() {
 }
 
 check_neighbors_collect_mac_pairs() {
-  local enabled
-  enabled="$1"
-  [[ "$enabled" == "1" ]] || return 0
-  lookup_mac_table >"$2" &
-  check_neighbors_collect_pairs "$2" "$3" "$4"
+  [[ -n "${NEIGHBOR_MAC_LOOKUP:-}" ]] || return 0
+  lookup_mac_table >"$1" &
+  check_neighbors_collect_pairs "$1" "$2" "$3"
 }
 
 check_neighbors_collect_mdns_pairs() {
-  local enabled
-  enabled="$1"
-  [[ "$enabled" == "1" ]] || return 0
-  inspect_mdns_browse_table >"$2" &
-  check_neighbors_collect_pairs "$2" "$3" "$4"
+  [[ -n "${NEIGHBOR_MDNS_BROWSE:-}" ]] || return 0
+  inspect_mdns_browse_table >"$1" &
+  check_neighbors_collect_pairs "$1" "$2" "$3"
 }
 
 check_neighbors_stage_progress_count() {
-  local enabled
-  enabled="$1"
-  [[ "$enabled" == "1" ]] || return 0
-  check_neighbors_progress_count "$2" "$3" "$4"
+  [[ -n "${NEIGHBOR_MDNS_BROWSE:-}" ]] || return 0
+  check_neighbors_progress_count "$1" "$2" "$3"
 }
 
 check_neighbors_stage_progress_done() {
-  local enabled
-  enabled="$1"
-  [[ "$enabled" == "1" ]] || return 0
+  [[ -n "${NEIGHBOR_MDNS_BROWSE:-}" ]] || return 0
   check_neighbors_progress_done
 }
 
