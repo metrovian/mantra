@@ -122,7 +122,7 @@ check_neighbors() {
       hostname_ips \
       hostname_values \
       "$ip")"
-    if [[ -z "${hostname:-}" ]]; then
+    if [[ "$mdns_stage_enabled" == "1" ]] && [[ -z "${hostname:-}" ]]; then
       hostname="$(resolve_mdns_hostname "$ip")"
     fi
     table_add_row \
