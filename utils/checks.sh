@@ -1,3 +1,31 @@
+check_prepare_context() {
+  if [[ -n "${GATEWAY:-}" && -n "${ME:-}" && -n "${PREFIX:-}" ]]; then
+    IFACE="${IFACE:-manual}"
+  else
+    inspect_network
+    NEIGHBOR_MAC_LOOKUP=1
+    NEIGHBOR_MDNS_BROWSE=1
+  fi
+  if [[ -z "${GATEWAY:-}" || -z "${IFACE:-}" || -z "${ME:-}" || -z "${PREFIX:-}" ]]; then
+    echo "could not detect gateway or local IPv4 address." >&2
+    exit 1
+  fi
+  SUBNET="$(network_subnet_address "$ME" "$PREFIX")"
+  SUBNET_FIRST="$(network_subnet_first_host "$SUBNET" "$PREFIX")"
+  SUBNET_LAST="$(network_subnet_last_host "$SUBNET" "$PREFIX")"
+}
+
+check_local() {
+  pair_reset
+  pair_set_title "LOCAL"
+  pair_add "time" "$(date '+%Y-%m-%d %H:%M:%S %Z')"
+  pair_add "iface" "$IFACE"
+  pair_add "me" "$ME"
+  pair_add "gateway" "$GATEWAY"
+  pair_add "subnet" "${SUBNET}/${PREFIX}"
+  pair_print
+}
+
 check_neighbors() {
   local -a active_hosts=()
   local -a hosts=()
@@ -15,7 +43,6 @@ check_neighbors() {
   local total_hosts
   local progress_total
   local progress_current
-  local ping_row
   local index
   local ping_done_count
   local ping_result

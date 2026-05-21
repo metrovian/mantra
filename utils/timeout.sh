@@ -1,4 +1,4 @@
-prepare_environment_context() {
+timeout_prepare_context() {
   INSPECT_TIMEOUT=0.2
   MDNS_BROWSE_TIMEOUT=0.5
   MDNS_RESOLVE_TIMEOUT=0.3

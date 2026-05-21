@@ -18,18 +18,16 @@ source_modules() {
 
 source_modules \
   abstracts/$OS.sh \
+  utils/checks.sh \
   utils/network.sh \
   utils/pair.sh \
   utils/resolve.sh \
   utils/table.sh \
-  prepares/environments.sh \
-  prepares/local.sh \
-  checks/local.sh \
-  checks/neighbors.sh
+  utils/timeout.sh
 
 main() {
-  prepare_environment_context
-  prepare_local_context
+  timeout_prepare_context
+  check_prepare_context
   check_local
   check_neighbors
 }
