@@ -1,5 +1,5 @@
 ## MARIONETTE
-- Remote administration with context scoped router group
+- Remote administration with connection groups
 - Profile management 
 - Hostname management ( OpenSSH )
 <br></br>
