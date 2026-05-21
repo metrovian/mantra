@@ -16,10 +16,10 @@ source_modules() {
 }
 
 source_modules \
+  utils/host.sh \
   utils/path.sh \
-  utils/validate.sh \
-  profiles/common.sh \
-  hosts/common.sh
+  utils/profile.sh \
+  utils/validate.sh
 
 main() {
   path_prepare
