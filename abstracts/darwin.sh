@@ -11,6 +11,7 @@ inspect_network() {
       | awk '/inet / && $2 != "127.0.0.1" {print $4; exit}'
   )"
   PREFIX="$(inspect_netmask_prefix "$netmask_hex")"
+  SUBNET_CIDR="$(inspect_subnet_cidr "$ME" "$netmask_hex" "$PREFIX")"
 }
 
 inspect_netmask_prefix() {
@@ -27,4 +28,19 @@ inspect_netmask_prefix() {
     fi
   done
   echo "$prefix"
+}
+
+inspect_subnet_cidr() {
+  local a b c d value prefix ip subnet
+  IFS=. read -r a b c d <<<"$1"
+  value=$((16#${2#0x}))
+  prefix="$3"
+  ip=$((((a << 24) | (b << 16) | (c << 8) | d)))
+  subnet=$((ip & value))
+  printf '%d.%d.%d.%d/%s\n' \
+    "$(((subnet >> 24) & 255))" \
+    "$(((subnet >> 16) & 255))" \
+    "$(((subnet >> 8) & 255))" \
+    "$((subnet & 255))" \
+    "$prefix"
 }

@@ -14,15 +14,14 @@ source_modules() {
 [[ -f "$ROOT_DIR/abstracts/$OS.sh" ]] || exit 1
 source_modules \
   abstracts/$OS.sh \
-  utils/map.sh \
   utils/network.sh \
   utils/pair.sh \
   utils/table.sh
 
 main() {
-  map_prepare_context
-  map_local
-  map_neighbors
+  network_prepare_context
+  network_local
+  network_neighbors
 }
 
 main "$@"
