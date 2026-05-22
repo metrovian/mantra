@@ -21,12 +21,9 @@ source_modules \
   utils/checks.sh \
   utils/network.sh \
   utils/pair.sh \
-  utils/resolve.sh \
-  utils/table.sh \
-  utils/timeout.sh
+  utils/table.sh
 
 main() {
-  timeout_prepare_context
   check_prepare_context
   check_local
   check_neighbors
