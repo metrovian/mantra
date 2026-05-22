@@ -1,4 +1,4 @@
-check_prepare_context() {
+map_prepare_context() {
   if [[ -n "${GATEWAY:-}" && -n "${ME:-}" && -n "${PREFIX:-}" ]]; then
     IFACE="${IFACE:-manual}"
   else
@@ -12,12 +12,12 @@ check_prepare_context() {
     echo "nmap is required. run 3rdparty/setup-$OS.sh first." >&2
     exit 1
   fi
-  check_prepare_sudo
+  map_prepare_sudo
   SUBNET="$(network_subnet_address "$ME" "$PREFIX")"
   SUBNET_CIDR="${SUBNET}/${PREFIX}"
 }
 
-check_prepare_sudo() {
+map_prepare_sudo() {
   if ((EUID == 0)); then
     return
   fi
@@ -28,7 +28,7 @@ check_prepare_sudo() {
   sudo -v
 }
 
-check_local() {
+map_local() {
   pair_reset
   pair_set_title "LOCAL"
   pair_add "time" "$(date '+%Y-%m-%d %H:%M:%S %Z')"
@@ -39,7 +39,7 @@ check_local() {
   pair_print
 }
 
-check_neighbors() {
+map_neighbors() {
   local ip
   local mac
   local oui
@@ -50,12 +50,12 @@ check_neighbors() {
     [[ -n "${ip:-}" ]] || continue
     table_add_row "$ip" "$mac" "$oui" "$ssh"
   done < <(
-    check_neighbors_scan "$SUBNET_CIDR" | check_neighbors_parse
+    map_neighbors_scan "$SUBNET_CIDR" | map_neighbors_parse
   )
   table_print
 }
 
-check_neighbors_scan() {
+map_neighbors_scan() {
   sudo nmap \
     -n \
     -p 22 \
@@ -63,7 +63,7 @@ check_neighbors_scan() {
     "$1" 2>/dev/null || true
 }
 
-check_neighbors_parse() {
+map_neighbors_parse() {
   awk '
     function emit() {
       if (ip == "") {

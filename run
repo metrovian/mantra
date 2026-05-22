@@ -18,15 +18,15 @@ source_modules() {
 
 source_modules \
   abstracts/$OS.sh \
-  utils/checks.sh \
+  utils/map.sh \
   utils/network.sh \
   utils/pair.sh \
   utils/table.sh
 
 main() {
-  check_prepare_context
-  check_local
-  check_neighbors
+  map_prepare_context
+  map_local
+  map_neighbors
 }
 
 main "$@"
