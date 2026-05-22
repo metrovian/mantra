@@ -1,31 +1,9 @@
 map_prepare_context() {
-  if [[ -n "${GATEWAY:-}" && -n "${ME:-}" && -n "${PREFIX:-}" ]]; then
-    IFACE="${IFACE:-manual}"
-  else
-    inspect_network
-  fi
-  if [[ -z "${GATEWAY:-}" || -z "${IFACE:-}" || -z "${ME:-}" || -z "${PREFIX:-}" ]]; then
-    echo "could not detect gateway or local IPv4 address." >&2
-    exit 1
-  fi
-  if ! command -v nmap >/dev/null 2>&1; then
-    echo "nmap is required. run 3rdparty/setup-$OS.sh first." >&2
-    exit 1
-  fi
-  map_prepare_sudo
+  sudo -v
+  inspect_network
+  [[ -n "${GATEWAY:-}" && -n "${IFACE:-}" && -n "${ME:-}" && -n "${PREFIX:-}" ]] || return 1
   SUBNET="$(network_subnet_address "$ME" "$PREFIX")"
   SUBNET_CIDR="${SUBNET}/${PREFIX}"
-}
-
-map_prepare_sudo() {
-  if ((EUID == 0)); then
-    return
-  fi
-  if ! command -v sudo >/dev/null 2>&1; then
-    echo "sudo is required to run nmap." >&2
-    exit 1
-  fi
-  sudo -v
 }
 
 map_local() {
