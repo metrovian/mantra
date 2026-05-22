@@ -43,14 +43,12 @@ table_add_row() {
 
 table_print() {
   local format
-  local header_line
   local separator_line
   local row
   local index
   local value
   local -a fields
   format=""
-  header_line=""
   separator_line=""
   for ((index = 0; index < TABLE_COLUMN_COUNT; index++)); do
     if ((index < TABLE_COLUMN_COUNT - 1)); then

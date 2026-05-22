@@ -16,21 +16,15 @@ validate_names() {
 validate_require_arg_count() {
   local actual
   local expected
-  local args
   actual=$1
   expected=$2
-  if [ "$actual" -ne "$expected" ]; then
-    return 1
-  fi
+  [ "$actual" -eq "$expected" ]
 }
 
 validate_require_arg_max() {
   local actual
   local maximum
-  local args
   actual=$1
   maximum=$2
-  if [ "$actual" -gt "$maximum" ]; then
-    return 1
-  fi
+  [ "$actual" -le "$maximum" ]
 }
