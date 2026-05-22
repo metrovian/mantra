@@ -12,9 +12,20 @@ check_prepare_context() {
     echo "nmap is required. run 3rdparty/setup-$OS.sh first." >&2
     exit 1
   fi
-  NMAP_HOST_TIMEOUT="${NMAP_HOST_TIMEOUT:-1s}"
+  check_prepare_sudo
   SUBNET="$(network_subnet_address "$ME" "$PREFIX")"
   SUBNET_CIDR="${SUBNET}/${PREFIX}"
+}
+
+check_prepare_sudo() {
+  if ((EUID == 0)); then
+    return
+  fi
+  if ! command -v sudo >/dev/null 2>&1; then
+    echo "sudo is required to run nmap." >&2
+    exit 1
+  fi
+  sudo -v
 }
 
 check_local() {
@@ -45,12 +56,9 @@ check_neighbors() {
 }
 
 check_neighbors_scan() {
-  nmap \
+  sudo nmap \
     -n \
     -p 22 \
-    -T4 \
-    --max-retries 0 \
-    --host-timeout "$NMAP_HOST_TIMEOUT" \
     --exclude "$ME" \
     "$1" 2>/dev/null || true
 }
