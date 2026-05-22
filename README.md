@@ -1,5 +1,5 @@
 ## RADIANCE
-- Fundamental subnet checks on local area networks
+- Fundamental map on networks
 - Address resolution
-- Hostname resolution ( mDNS )
+- Organizationally unique identifier resolution ( OUI )
 <br></br>
