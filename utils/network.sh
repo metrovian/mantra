@@ -18,14 +18,14 @@ network_local() {
 
 network_neighbors() {
   local ip
-  local mac
-  local oui
   local ssh
   table_reset
-  table_set_headers "IP" "MAC" "OUI" "SSH"
-  while IFS=$'\t' read -r ip mac oui ssh; do
+  table_set_headers "IP" "SSH"
+  while IFS=$'\t' read -r ip ssh; do
     [[ -n "${ip:-}" ]] || continue
-    table_add_row "$ip" "$mac" "$oui" "$ssh"
+    [[ -z "${ssh:-}" ]] || ssh="$(network_ssh_fingerprint "$ssh")"
+    ssh="${ssh:--}"
+    table_add_row "$ip" "$ssh"
   done < <(
     network_neighbors_scan "$SUBNET_CIDR" | network_neighbors_parse
   )
@@ -46,38 +46,17 @@ network_neighbors_parse() {
       if (ip == "") {
         return
       }
-      if (mac == "") {
-        mac = "-"
-      }
-      if (oui == "") {
-        oui = "-"
-      }
-      if (ssh == "") {
-        ssh = "-"
-      }
-      print ip "\t" mac "\t" oui "\t" ssh
+      print ip "\t" ssh
     }
     /^Nmap scan report for / {
       emit()
       ip = $NF
-      mac = "-"
-      oui = "-"
-      ssh = "-"
+      ssh = ""
       next
     }
     /^22\/tcp[[:space:]]+open[[:space:]]+ssh$/ {
-      ssh = "o"
+      ssh = ip
       next
-    }
-    /^MAC Address: / {
-      mac = tolower($3)
-      oui = $0
-      sub(/^MAC Address: [^ ]+[[:space:]]*/, "", oui)
-      gsub(/^\(/, "", oui)
-      gsub(/\)$/, "", oui)
-      if (oui == "") {
-        oui = "-"
-      }
     }
     /^Nmap done:/ {
       emit()
@@ -87,4 +66,28 @@ network_neighbors_parse() {
       emit()
     }
   '
+}
+
+network_ssh_fingerprint() {
+  local ip
+  local output
+  ip="$1"
+  output="$({ ssh-keyscan -T 2 -t ed25519 "$ip" 2>/dev/null || true; } \
+    | ssh-keygen -lf - -E sha256 2>/dev/null \
+    | awk 'NR == 1 { print "ed25519:" $2 }'
+  )"
+  if [[ -n "$output" ]]; then
+    printf '%s\n' "$output"
+    return
+  fi
+  output="$({ ssh-keyscan -T 2 "$ip" 2>/dev/null || true; } \
+    | ssh-keygen -lf - -E sha256 2>/dev/null \
+    | awk 'NR == 1 {
+        type = $NF
+        gsub(/^\(/, "", type)
+        gsub(/\)$/, "", type)
+        print tolower(type) ":" $2
+      }'
+  )"
+  printf '%s\n' "${output:--}"
 }
