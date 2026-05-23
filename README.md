@@ -1,5 +1,5 @@
 ## RADIANCE
-- Fundamental map on networks
+- Remote reconnaissance map on networks
 - Prefix resolution
-- Remote fingerprint resolution ( OpenSSH )
+- Fingerprint resolution ( SSH )
 <br></br>
