@@ -4,6 +4,3 @@
 [submodule "radiance"]
 	path = radiance
 	url = https://github.com/metrovian/radiance.git
-[submodule "sanctuary"]
-	path = sanctuary
-	url = https://github.com/metrovian/sanctuary.git
