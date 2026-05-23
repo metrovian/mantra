@@ -1,5 +1,5 @@
 ## RADIANCE
 - Fundamental map on networks
-- Address resolution
-- Organizationally unique identifier resolution ( OUI )
+- Prefix resolution
+- Remote server fingerprints resolution ( OpenSSH )
 <br></br>
