@@ -26,10 +26,12 @@ status_add_host_row() {
   local alias
   local user
   local hostname
+  local fingerprint
   alias=$1
   user=$2
   hostname=$3
-  table_add_row "$hostname" "$user" "$alias"
+  fingerprint=${4:--}
+  table_add_row "$hostname" "$user" "$alias" "$fingerprint"
 }
 
 main() {
@@ -61,7 +63,7 @@ main() {
   fi
   echo
   table_reset
-  table_set_headers IP USER ALIAS
+  table_set_headers IP USER ALIAS SSH
   host_each "$selected" status_add_host_row
   table_print
 }
