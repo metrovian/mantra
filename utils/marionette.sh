@@ -1,51 +1,13 @@
-marionette_path_prepare() {
-  MARIONETTE_HOME=${MARIONETTE_HOME:-"$HOME/.config/marionette"}
-  MARIONETTE_PROFILES_DIR=$MARIONETTE_HOME/profiles
-  MARIONETTE_STATE_DIR=$MARIONETTE_HOME/state
-  MARIONETTE_CURRENT_PROFILE_FILE=$MARIONETTE_STATE_DIR/current_profile
-  MARIONETTE_GENERATED_CONFIG_FILE=$MARIONETTE_STATE_DIR/ssh_config
-  [[ -d "$MARIONETTE_HOME" ]] || return 1
-  mkdir -p "$MARIONETTE_PROFILES_DIR" "$MARIONETTE_STATE_DIR"
-}
-
-marionette_profile_dir() {
-  printf '%s/%s\n' "$MARIONETTE_PROFILES_DIR" "$1"
-}
-
-marionette_profile_hosts_file() {
-  printf '%s/hosts\n' "$(marionette_profile_dir "$1")"
-}
-
-marionette_profile_known_hosts_file() {
-  printf '%s/known_hosts\n' "$(marionette_profile_dir "$1")"
-}
-
-marionette_profile_current() {
-  [[ -f "$MARIONETTE_CURRENT_PROFILE_FILE" ]] || return 1
-  sed -n '1p' "$MARIONETTE_CURRENT_PROFILE_FILE"
-}
-
-marionette_profile_list() {
-  local path
-  [[ -d "$MARIONETTE_PROFILES_DIR" ]] || return 0
-  for path in "$MARIONETTE_PROFILES_DIR"/*; do
-    [[ -d "$path" ]] || continue
-    basename "$path"
-  done
-}
-
 marionette_write_ssh_config() {
-  local profile
-  local output
   local hosts_file
   local known_hosts
+  local output
   local alias
   local user
   local hostname
-  profile=$1
-  output=$2
-  hosts_file=$(marionette_profile_hosts_file "$profile")
-  known_hosts=$(marionette_profile_known_hosts_file "$profile")
+  hosts_file=$1
+  known_hosts=$2
+  output=$3
   [[ -f "$hosts_file" ]] || return 0
   [[ -f "$known_hosts" ]] || : >"$known_hosts"
   : >"$output"
@@ -61,32 +23,41 @@ EOF2
   done <"$hosts_file"
 }
 
-marionette_refresh() {
-  local profile
-  profile=$(marionette_profile_current) || return 0
-  [[ -d "$(marionette_profile_dir "$profile")" ]] || return 0
-  marionette_write_ssh_config "$profile" "$MARIONETTE_GENERATED_CONFIG_FILE"
-}
-
 marionette_sync() {
   local records
+  local home_dir
+  local profiles_dir
+  local state_dir
+  local current_profile_file
+  local generated_config_file
   local neighbors_file
+  local profile_dir
   local profile
   local hosts_file
+  local known_hosts_file
   local output_file
   local count_file
+  local current_profile
   local updated
   local updated_profiles
   local updated_hosts
   records=${1:-}
   [[ -n "$records" ]] || return 0
-  marionette_path_prepare || return 0
+  home_dir=${MARIONETTE_HOME:-"$HOME/.config/marionette"}
+  [[ -d "$home_dir" ]] || return 0
+  profiles_dir=$home_dir/profiles
+  state_dir=$home_dir/state
+  current_profile_file=$state_dir/current_profile
+  generated_config_file=$state_dir/ssh_config
+  mkdir -p "$profiles_dir" "$state_dir"
   neighbors_file=$(mktemp "${TMPDIR:-/tmp}/radiance-marionette-neighbors.XXXXXX")
   printf '%s\n' "$records" >"$neighbors_file"
   updated_profiles=0
   updated_hosts=0
-  for profile in $(marionette_profile_list); do
-    hosts_file=$(marionette_profile_hosts_file "$profile")
+  for profile_dir in "$profiles_dir"/*; do
+    [[ -d "$profile_dir" ]] || continue
+    profile=$(basename "$profile_dir")
+    hosts_file=$profile_dir/hosts
     [[ -f "$hosts_file" ]] || continue
     output_file=$(mktemp "${TMPDIR:-/tmp}/radiance-marionette-hosts.XXXXXX")
     count_file=$(mktemp "${TMPDIR:-/tmp}/radiance-marionette-count.XXXXXX")
@@ -119,7 +90,15 @@ marionette_sync() {
     fi
   done
   rm -f "$neighbors_file"
-  marionette_refresh
+  if [[ -f "$current_profile_file" ]]; then
+    current_profile=$(sed -n '1p' "$current_profile_file")
+    if [[ -n "$current_profile" && -d "$profiles_dir/$current_profile" ]]; then
+      marionette_write_ssh_config \
+        "$profiles_dir/$current_profile/hosts" \
+        "$profiles_dir/$current_profile/known_hosts" \
+        "$generated_config_file"
+    fi
+  fi
   if [[ "$updated_hosts" -gt 0 ]]; then
     printf 'marionette synced %s host%s across %s profile%s\n' \
       "$updated_hosts" \
