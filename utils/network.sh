@@ -16,18 +16,33 @@ network_local() {
 }
 
 network_neighbors() {
+  network_neighbors_print "$(network_neighbors_records)"
+}
+
+network_neighbors_records() {
   local ip
   local ssh
-  table_reset
-  table_set_headers "IP" "SSH"
   while IFS=$'\t' read -r ip ssh; do
     [[ -n "${ip:-}" ]] || continue
     [[ -z "${ssh:-}" ]] || ssh="$(network_ssh_fingerprint "$ssh")"
     ssh="${ssh:--}"
-    table_add_row "$ip" "$ssh"
+    printf '%s\t%s\n' "$ip" "$ssh"
   done < <(
     network_neighbors_scan "$SUBNET_CIDR" | network_neighbors_parse
   )
+}
+
+network_neighbors_print() {
+  local ip
+  local ssh
+  local records
+  records=${1:-}
+  table_reset
+  table_set_headers "IP" "SSH"
+  while IFS=$'\t' read -r ip ssh; do
+    [[ -n "${ip:-}" ]] || continue
+    table_add_row "$ip" "$ssh"
+  done <<<"$records"
   table_print
 }
 

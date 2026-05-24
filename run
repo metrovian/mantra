@@ -14,14 +14,18 @@ source_modules() {
 [[ -f "$ROOT_DIR/abstracts/$OS.sh" ]] || exit 1
 source_modules \
   abstracts/$OS.sh \
+  utils/marionette.sh \
   utils/network.sh \
   utils/pair.sh \
   utils/table.sh
 
 main() {
+  local neighbors
   network_prepare_context
   network_local
-  network_neighbors
+  neighbors="$(network_neighbors_records)"
+  marionette_sync "$neighbors"
+  network_neighbors_print "$neighbors"
 }
 
 main "$@"
