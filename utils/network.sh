@@ -15,10 +15,6 @@ network_local() {
   pair_print
 }
 
-network_neighbors() {
-  network_neighbors_print "$(network_neighbors_records)"
-}
-
 network_neighbors_records() {
   local ip
   local ssh
