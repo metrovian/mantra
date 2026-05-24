@@ -1,15 +1,11 @@
-validate_name() {
-  case "$1" in
-    ""|*[!a-zA-Z0-9._-]*)
-      return 1
-      ;;
-  esac
-}
-
 validate_names() {
   local name
   for name in "$@"; do
-    validate_name "$name"
+    case "$name" in
+      ""|*[!a-zA-Z0-9._-]*)
+        return 1
+        ;;
+    esac
   done
 }
 
