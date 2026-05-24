@@ -1,43 +1,14 @@
-marionette_write_ssh_config() {
-  local hosts_file
-  local known_hosts
-  local output
-  local alias
-  local user
-  local hostname
-  hosts_file=$1
-  known_hosts=$2
-  output=$3
-  [[ -f "$hosts_file" ]] || return 0
-  [[ -f "$known_hosts" ]] || : >"$known_hosts"
-  : >"$output"
-  while IFS=$'\t' read -r alias user hostname _; do
-    [[ -n "$alias" ]] || continue
-    cat >>"$output" <<EOF2
-Host $alias
-  HostName $hostname
-  User $user
-  UserKnownHostsFile $known_hosts
-
-EOF2
-  done <"$hosts_file"
-}
-
 marionette_sync() {
   local records
   local home_dir
   local profiles_dir
   local state_dir
-  local current_profile_file
-  local generated_config_file
   local neighbors_file
   local profile_dir
   local profile
   local hosts_file
-  local known_hosts_file
   local output_file
   local count_file
-  local current_profile
   local updated
   local updated_profiles
   local updated_hosts
@@ -47,8 +18,6 @@ marionette_sync() {
   [[ -d "$home_dir" ]] || return 0
   profiles_dir=$home_dir/profiles
   state_dir=$home_dir/state
-  current_profile_file=$state_dir/current_profile
-  generated_config_file=$state_dir/ssh_config
   mkdir -p "$profiles_dir" "$state_dir"
   neighbors_file=$(mktemp "${TMPDIR:-/tmp}/radiance-marionette-neighbors.XXXXXX")
   printf '%s\n' "$records" >"$neighbors_file"
@@ -90,15 +59,6 @@ marionette_sync() {
     fi
   done
   rm -f "$neighbors_file"
-  if [[ -f "$current_profile_file" ]]; then
-    current_profile=$(sed -n '1p' "$current_profile_file")
-    if [[ -n "$current_profile" && -d "$profiles_dir/$current_profile" ]]; then
-      marionette_write_ssh_config \
-        "$profiles_dir/$current_profile/hosts" \
-        "$profiles_dir/$current_profile/known_hosts" \
-        "$generated_config_file"
-    fi
-  fi
   if [[ "$updated_hosts" -gt 0 ]]; then
     printf 'marionette synced %s host%s across %s profile%s\n' \
       "$updated_hosts" \
