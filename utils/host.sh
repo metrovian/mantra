@@ -6,7 +6,7 @@ host_exists() {
   if [ ! -f "$(profile_hosts_file "$profile")" ]; then
     return 1
   fi
-  awk -F '\t' -v alias="$alias" '$1 == alias { found = 1 } END { exit !found }' \
+  awk -F '[ ]+' -v alias="$alias" '$1 == alias { found = 1 } END { exit !found }' \
     "$(profile_hosts_file "$profile")"
 }
 
@@ -23,7 +23,7 @@ host_each() {
   if [ ! -f "$(profile_hosts_file "$profile")" ]; then
     return 0
   fi
-  while IFS=$'\t' read -r alias user hostname fingerprint; do
+  while IFS=' ' read -r alias user hostname fingerprint; do
     [ -n "$alias" ] || continue
     "$callback" "$alias" "$user" "$hostname" "$fingerprint" "$@"
   done <"$(profile_hosts_file "$profile")"
@@ -36,7 +36,7 @@ host_count() {
     printf '0\n'
     return 0
   fi
-  awk -F '\t' 'NF > 0 && $1 != "" { count++ } END { print count + 0 }' \
+  awk -F '[ ]+' 'NF > 0 && $1 != "" { count++ } END { print count + 0 }' \
     "$(profile_hosts_file "$profile")"
 }
 
@@ -51,7 +51,7 @@ host_add() {
   user=$3
   hostname=$4
   fingerprint=${5:-}
-  printf '%s\t%s\t%s\t%s\n' \
+  printf '%s %s %s %s\n' \
     "$alias" \
     "$user" \
     "$hostname" \
@@ -68,7 +68,7 @@ host_remove() {
   alias=$2
   input=$(profile_hosts_file "$profile")
   output=$input.tmp
-  awk -F '\t' -v alias="$alias" '$1 != alias { print }' "$input" >"$output"
+  awk -F '[ ]+' -v alias="$alias" '$1 != alias { print }' "$input" >"$output"
   mv "$output" "$input"
 }
 
@@ -86,7 +86,7 @@ host_write_ssh_config() {
     : >"$known_hosts"
   fi
   : >"$output"
-  while IFS=$'\t' read -r alias user hostname _; do
+  while IFS=' ' read -r alias user hostname _; do
     [ -n "$alias" ] || continue
     cat >>"$output" <<EOF2
 Host $alias
