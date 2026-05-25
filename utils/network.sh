@@ -19,11 +19,19 @@ network_local() {
 network_neighbors_records() {
   local ip
   local ssh
+  local details
+  local fingerprint
+  local key
   while IFS=$'\t' read -r ip ssh; do
     [[ -n "${ip:-}" ]] || continue
-    [[ -z "${ssh:-}" ]] || ssh="$(network_ssh_fingerprint "$ssh")"
-    ssh="${ssh:--}"
-    printf '%s\t%s\n' "$ip" "$ssh"
+    details='-\t-'
+    if [[ -n "${ssh:-}" ]]; then
+      details="$(network_ssh_details "$ssh")"
+    fi
+    IFS=$'\t' read -r fingerprint key <<<"$details"
+    fingerprint=${fingerprint:--}
+    key=${key:--}
+    printf '%s\t%s\t%s\n' "$ip" "$fingerprint" "$key"
   done < <(
     network_neighbors_scan "$SUBNET_CIDR" | network_neighbors_parse
   )
@@ -32,11 +40,12 @@ network_neighbors_records() {
 network_neighbors_print() {
   local ip
   local ssh
+  local _key
   local records
   records=${1:-}
   table_reset
   table_set_headers "IP" "SSH"
-  while IFS=$'\t' read -r ip ssh; do
+  while IFS=$'\t' read -r ip ssh _key; do
     [[ -n "${ip:-}" ]] || continue
     table_add_row "$ip" "$ssh"
   done <<<"$records"
@@ -79,19 +88,23 @@ network_neighbors_parse() {
   '
 }
 
-network_ssh_fingerprint() {
+network_ssh_details() {
   local ip
-  local output
-  ip="$1"
-  output="$({ ssh-keyscan -T 2 -t ed25519 "$ip" 2>/dev/null || true; } \
-    | ssh-keygen -lf - -E sha256 2>/dev/null \
-    | awk 'NR == 1 { print "ed25519:" $2 }'
-  )"
-  if [[ -n "$output" ]]; then
-    printf '%s\n' "$output"
+  local scan_output
+  local key_line
+  local fingerprint
+  local key
+  ip=$1
+  scan_output="$(ssh-keyscan -T 2 -t ed25519 "$ip" 2>/dev/null || true)"
+  if [[ -z "$scan_output" ]]; then
+    scan_output="$(ssh-keyscan -T 2 "$ip" 2>/dev/null || true)"
+  fi
+  key_line="$(printf '%s\n' "$scan_output" | sed -n '1p')"
+  if [[ -z "$key_line" ]]; then
+    printf '%s\t%s\n' '-' '-'
     return
   fi
-  output="$({ ssh-keyscan -T 2 "$ip" 2>/dev/null || true; } \
+  fingerprint="$(printf '%s\n' "$key_line" \
     | ssh-keygen -lf - -E sha256 2>/dev/null \
     | awk 'NR == 1 {
         type = $NF
@@ -100,5 +113,6 @@ network_ssh_fingerprint() {
         print tolower(type) ":" $2
       }'
   )"
-  printf '%s\n' "${output:--}"
+  key=${key_line#* }
+  printf '%s\t%s\n' "${fingerprint:--}" "$key"
 }
