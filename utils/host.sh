@@ -59,17 +59,83 @@ host_add() {
     >>"$(profile_hosts_file "$profile")"
 }
 
+host_known_host_fingerprint() {
+  local key
+  local output
+  local type
+  local hash
+  key=$1
+  output=$(printf '%s\n' "$key" | ssh-keygen -lf - -E sha256 2>/dev/null) || return 1
+  [ -n "$output" ] || return 1
+  type=${output##* }
+  type=${type#(}
+  type=${type%)}
+  type=$(printf '%s' "$type" | tr '[:upper:]' '[:lower:]')
+  hash=$(printf '%s\n' "$output" | awk 'NR == 1 { print $2 }')
+  printf '%s:%s\n' "$type" "$hash"
+}
+
+host_remove_known_host() {
+  local profile
+  local fingerprint
+  local known_hosts
+  local output
+  local line
+  local line_fingerprint
+  profile=$1
+  fingerprint=$2
+  [ -n "$fingerprint" ] || return 0
+  known_hosts=$(profile_known_hosts_file "$profile")
+  [ -f "$known_hosts" ] || return 0
+  output=$known_hosts.tmp
+  : >"$output"
+  while IFS= read -r line; do
+    if [ -z "$line" ] || [ "${line#\#}" != "$line" ]; then
+      printf '%s\n' "$line" >>"$output"
+      continue
+    fi
+    line_fingerprint=$(host_known_host_fingerprint "$line" || true)
+    if [ "$line_fingerprint" = "$fingerprint" ]; then
+      continue
+    fi
+    printf '%s\n' "$line" >>"$output"
+  done <"$known_hosts"
+  mv "$output" "$known_hosts"
+}
+
 host_remove() {
   local profile
   local alias
   local input
   local output
+  local host_alias
+  local user
+  local hostname
+  local fingerprint
+  local removed_fingerprint
   profile=$1
   alias=$2
   input=$(profile_hosts_file "$profile")
   output=$input.tmp
-  awk -F '[ ]+' -v alias="$alias" '$1 != alias { print }' "$input" >"$output"
+  removed_fingerprint=
+  while IFS=' ' read -r host_alias user hostname fingerprint; do
+    if [ -z "$host_alias" ]; then
+      printf '\n' >>"$output"
+      continue
+    fi
+    if [ "$host_alias" = "$alias" ]; then
+      removed_fingerprint=$fingerprint
+      continue
+    fi
+    printf '%s %s %s %s\n' \
+      "$host_alias" \
+      "$user" \
+      "$hostname" \
+      "$fingerprint" \
+      >>"$output"
+  done <"$input"
   mv "$output" "$input"
+  host_remove_known_host "$profile" "$removed_fingerprint"
 }
 
 host_write_ssh_config() {
