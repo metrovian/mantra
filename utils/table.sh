@@ -64,6 +64,9 @@ table_print() {
   fields=("${TABLE_HEADERS[@]}")
   printf "$format" "${fields[@]}"
   printf "%s\n" "$separator_line"
+  if [ "${#TABLE_ROWS[@]}" -eq 0 ]; then
+    return 0
+  fi
   for row in "${TABLE_ROWS[@]}"; do
     IFS=$'\t' read -r -a fields <<<"$row"
     for ((index = 0; index < TABLE_COLUMN_COUNT; index++)); do
