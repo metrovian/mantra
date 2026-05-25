@@ -19,16 +19,15 @@ network_local() {
 network_neighbors_records() {
   local ip
   local ssh
-  local details
   local fingerprint
   local key
   while IFS=$'\t' read -r ip ssh; do
     [[ -n "${ip:-}" ]] || continue
-    details='-\t-'
+    fingerprint='-'
+    key='-'
     if [[ -n "${ssh:-}" ]]; then
-      details="$(network_ssh_details "$ssh")"
+      IFS=$'\t' read -r fingerprint key <<<"$(network_ssh_details "$ssh")"
     fi
-    IFS=$'\t' read -r fingerprint key <<<"$details"
     fingerprint=${fingerprint:--}
     key=${key:--}
     printf '%s\t%s\t%s\n' "$ip" "$fingerprint" "$key"
@@ -39,15 +38,15 @@ network_neighbors_records() {
 
 network_neighbors_print() {
   local ip
-  local ssh
-  local _key
+  local fingerprint
+  local key
   local records
   records=${1:-}
   table_reset
   table_set_headers "IP" "SSH"
-  while IFS=$'\t' read -r ip ssh _key; do
+  while IFS=$'\t' read -r ip fingerprint key; do
     [[ -n "${ip:-}" ]] || continue
-    table_add_row "$ip" "$ssh"
+    table_add_row "$ip" "$fingerprint"
   done <<<"$records"
   table_print
 }
