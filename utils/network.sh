@@ -1,4 +1,5 @@
 network_prepare_context() {
+  sudo -v
   inspect_network
   [[ -n "${GATEWAY:-}" && -n "${IFACE:-}" && -n "${ME:-}" \
     && -n "${PREFIX:-}" && -n "${SUBNET_CIDR:-}" ]] || return 1
@@ -43,7 +44,7 @@ network_neighbors_print() {
 }
 
 network_neighbors_scan() {
-  nmap \
+  sudo nmap \
     -n \
     -p 22 \
     --exclude "$ME" \
