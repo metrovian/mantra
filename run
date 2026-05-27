@@ -22,8 +22,11 @@ source_modules \
 main() {
   local neighbors
   network_prepare_context
-  network_local
-  neighbors="$(network_neighbors_records)"
+  if [[ $# -eq 0 ]]; then
+    network_local
+    return 0
+  fi
+  neighbors="$(network_neighbors_records "$@")"
   marionette_sync "$neighbors"
   network_neighbors_print "$neighbors"
 }

@@ -1,5 +1,4 @@
 network_prepare_context() {
-  sudo -v
   inspect_network
   [[ -n "${GATEWAY:-}" && -n "${IFACE:-}" && -n "${ME:-}" \
     && -n "${PREFIX:-}" && -n "${SUBNET_CIDR:-}" ]] || return 1
@@ -32,7 +31,7 @@ network_neighbors_records() {
     key=${key:--}
     printf '%s\t%s\t%s\n' "$ip" "$fingerprint" "$key"
   done < <(
-    network_neighbors_scan "$SUBNET_CIDR" | network_neighbors_parse
+    network_neighbors_scan "$@" | network_neighbors_parse
   )
 }
 
@@ -56,7 +55,7 @@ network_neighbors_scan() {
     -n \
     -p 22 \
     --exclude "$ME" \
-    "$1" 2>/dev/null || true
+    "$@" 2>/dev/null || true
 }
 
 network_neighbors_parse() {
