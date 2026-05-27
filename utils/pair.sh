@@ -54,5 +54,4 @@ pair_print() {
     value="${PAIR_VALUES[$index]}"
     printf "%-${PAIR_KEY_WIDTH}s %s\n" "$key" "$value"
   done
-  echo
 }
