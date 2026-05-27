@@ -1,17 +1,30 @@
+inspect_me() {
+  local iface
+  iface="$(route -n get default | awk '/interface:/ {print $2}')"
+  ifconfig "$iface" \
+    | awk '/inet / && $2 != "127.0.0.1" {print $2; exit}'
+}
+
 inspect_network() {
+  local gateway
+  local iface
+  local me
   local netmask_hex
-  GATEWAY="$(route -n get default | awk '/gateway:/ {print $2}')"
-  IFACE="$(route -n get default | awk '/interface:/ {print $2}')"
-  ME="$(
-    ifconfig "$IFACE" \
+  local prefix
+  local subnet_cidr
+  gateway="$(route -n get default | awk '/gateway:/ {print $2}')"
+  iface="$(route -n get default | awk '/interface:/ {print $2}')"
+  me="$(
+    ifconfig "$iface" \
       | awk '/inet / && $2 != "127.0.0.1" {print $2; exit}'
   )"
   netmask_hex="$(
-    ifconfig "$IFACE" \
+    ifconfig "$iface" \
       | awk '/inet / && $2 != "127.0.0.1" {print $4; exit}'
   )"
-  PREFIX="$(inspect_netmask_prefix "$netmask_hex")"
-  SUBNET_CIDR="$(inspect_subnet_cidr "$ME" "$netmask_hex" "$PREFIX")"
+  prefix="$(inspect_netmask_prefix "$netmask_hex")"
+  subnet_cidr="$(inspect_subnet_cidr "$me" "$netmask_hex" "$prefix")"
+  printf '%s\t%s\t%s\t%s\n' "$gateway" "$iface" "$me" "$subnet_cidr"
 }
 
 inspect_netmask_prefix() {

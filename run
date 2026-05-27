@@ -21,7 +21,6 @@ source_modules \
 
 main() {
   local neighbors
-  network_prepare_context
   if [[ $# -eq 0 ]]; then
     network_local
     return 0

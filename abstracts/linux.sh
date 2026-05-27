@@ -1,17 +1,30 @@
-inspect_network() {
+inspect_me() {
   local cidr
-  local subnet_cidr
-  GATEWAY="$(ip route show default | awk 'NR==1 {print $3}')"
-  IFACE="$(ip route show default | awk 'NR==1 {print $5}')"
+  local iface
+  iface="$(ip route show default | awk 'NR==1 {print $5}')"
   cidr="$(
-    ip -o -f inet addr show dev "$IFACE" scope global \
+    ip -o -f inet addr show dev "$iface" scope global \
       | awk 'NR==1 {print $4}'
   )"
-  ME="$(awk -F/ 'NR==1 {print $1}' <<<"$cidr")"
-  PREFIX="$(awk -F/ 'NR==1 {print $2}' <<<"$cidr")"
+  awk -F/ 'NR==1 {print $1}' <<<"$cidr"
+}
+
+inspect_network() {
+  local cidr
+  local gateway
+  local iface
+  local me
+  local subnet_cidr
+  gateway="$(ip route show default | awk 'NR==1 {print $3}')"
+  iface="$(ip route show default | awk 'NR==1 {print $5}')"
+  cidr="$(
+    ip -o -f inet addr show dev "$iface" scope global \
+      | awk 'NR==1 {print $4}'
+  )"
+  me="$(awk -F/ 'NR==1 {print $1}' <<<"$cidr")"
   subnet_cidr="$(
-    ip route show dev "$IFACE" proto kernel scope link \
+    ip route show dev "$iface" proto kernel scope link \
       | awk 'NR==1 {print $1}'
   )"
-  SUBNET_CIDR="${subnet_cidr:-$cidr}"
+  printf '%s\t%s\t%s\t%s\n' "$gateway" "$iface" "$me" "${subnet_cidr:-$cidr}"
 }

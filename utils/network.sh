@@ -1,17 +1,18 @@
-network_prepare_context() {
-  inspect_network
-  [[ -n "${GATEWAY:-}" && -n "${IFACE:-}" && -n "${ME:-}" \
-    && -n "${PREFIX:-}" && -n "${SUBNET_CIDR:-}" ]] || return 1
-}
-
 network_local() {
+  local gateway
+  local iface
+  local me
+  local subnet_cidr
+  IFS=$'\t' read -r gateway iface me subnet_cidr <<<"$(inspect_network)"
+  [[ -n "${gateway:-}" && -n "${iface:-}" && -n "${me:-}" \
+    && -n "${subnet_cidr:-}" ]] || return 1
   pair_reset
   pair_set_title "LOCAL"
   pair_add "time" "$(date '+%Y-%m-%d %H:%M:%S %Z')"
-  pair_add "iface" "$IFACE"
-  pair_add "me" "$ME"
-  pair_add "gateway" "$GATEWAY"
-  pair_add "subnet" "$SUBNET_CIDR"
+  pair_add "iface" "$iface"
+  pair_add "me" "$me"
+  pair_add "gateway" "$gateway"
+  pair_add "subnet" "$subnet_cidr"
   pair_print
 }
 
@@ -51,10 +52,13 @@ network_neighbors_print() {
 }
 
 network_neighbors_scan() {
+  local me
+  me="$(inspect_me)"
+  [[ -n "${me:-}" ]] || return 1
   sudo nmap \
     -n \
     -p 22 \
-    --exclude "$ME" \
+    --exclude "$me" \
     "$@" 2>/dev/null || true
 }
 
