@@ -10,26 +10,15 @@ marionette_replace_file() {
   fi
 }
 
-marionette_host_for_fingerprint() {
-  local fingerprint
+marionette_record_host_for() {
+  local field
+  local value
   local records_file
-  fingerprint=$1
-  records_file=$2
-  awk -F '\t' -v fingerprint="$fingerprint" '
-    $1 != "" && $2 == fingerprint {
-      print $1
-      exit
-    }
-  ' "$records_file"
-}
-
-marionette_alias_for_key() {
-  local key
-  local records_file
-  key=$1
-  records_file=$2
-  awk -F '\t' -v key="$key" '
-    $1 != "" && $3 == key {
+  field=$1
+  value=$2
+  records_file=$3
+  awk -F '\t' -v field="$field" -v value="$value" '
+    $1 != "" && $field == value {
       print $1
       exit
     }
@@ -56,7 +45,7 @@ marionette_write_hosts_file() {
     fi
     matched_host=
     if [[ -n "$fingerprint" && "$fingerprint" != "-" ]]; then
-      matched_host=$(marionette_host_for_fingerprint "$fingerprint" "$records_file")
+      matched_host=$(marionette_record_host_for 2 "$fingerprint" "$records_file")
     fi
     if [[ -n "$matched_host" ]]; then
       hostname=$matched_host
@@ -73,7 +62,7 @@ marionette_write_known_hosts_file() {
   local line
   local host_field
   local key
-  local alias
+  local matched_host
   records_file=$1
   known_hosts_file=$2
   [[ -f "$known_hosts_file" ]] || return 0
@@ -89,9 +78,9 @@ marionette_write_known_hosts_file() {
       printf '%s\n' "$line"
       continue
     fi
-    alias=$(marionette_alias_for_key "$key" "$records_file")
-    if [[ -n "$alias" ]]; then
-      host_field=$alias
+    matched_host=$(marionette_record_host_for 3 "$key" "$records_file")
+    if [[ -n "$matched_host" ]]; then
+      host_field=$matched_host
     fi
     printf '%s %s\n' "$host_field" "$key"
   done <"$known_hosts_file" >"$output_file"
