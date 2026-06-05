@@ -10,13 +10,13 @@ usage() {
 # shellcheck source=/dev/null
 source "$ROOT_DIR/../utils/source.sh"
 source_modules \
+  ../utils/filesystem.sh \
   ../utils/host.sh \
-  ../utils/path.sh \
   ../utils/profile.sh \
   ../utils/ssh.sh
 
 main() {
-  path_prepare
+  filesystem_prepare
   if [ "$#" -eq 0 ]; then
     usage
   fi

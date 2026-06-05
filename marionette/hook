@@ -10,15 +10,15 @@ usage() {
 # shellcheck source=/dev/null
 source "$ROOT_DIR/../utils/source.sh"
 source_modules \
+  ../utils/filesystem.sh \
   ../utils/host.sh \
-  ../utils/path.sh \
   ../utils/profile.sh \
   ../utils/ssh.sh \
   ../utils/validate.sh
 
 main() {
   local fingerprint
-  path_prepare
+  filesystem_prepare
   validate_require_arg_count "$#" 4 || usage
   validate_names "$1" "$2" "$3"
   profile_require "$1"

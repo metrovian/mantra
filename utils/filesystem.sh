@@ -1,3 +1,12 @@
+filesystem_prepare() {
+  MANTRA_HOME=${MANTRA_HOME:-"$HOME/.config/mantra"}
+  MANTRA_PROFILES_DIR=$MANTRA_HOME/profiles
+  MANTRA_STATE_DIR=$MANTRA_HOME/state
+  MANTRA_CURRENT_PROFILE_FILE=$MANTRA_STATE_DIR/current_profile
+  MANTRA_GENERATED_CONFIG_FILE=$MANTRA_STATE_DIR/ssh_config
+  mkdir -p "$MANTRA_PROFILES_DIR" "$MANTRA_STATE_DIR"
+}
+
 filesystem_replace_if_changed() {
   local target_file
   local output_file

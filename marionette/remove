@@ -10,12 +10,12 @@ usage() {
 # shellcheck source=/dev/null
 source "$ROOT_DIR/../utils/source.sh"
 source_modules \
-  ../utils/path.sh \
+  ../utils/filesystem.sh \
   ../utils/profile.sh \
   ../utils/validate.sh
 
 main() {
-  path_prepare
+  filesystem_prepare
   validate_require_arg_count "$#" 1 || usage
   validate_names "$1"
   if ! profile_exists "$1"; then
