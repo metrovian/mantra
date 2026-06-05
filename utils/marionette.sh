@@ -37,7 +37,7 @@ marionette_write_hosts_file() {
   records=${1:-}
   hosts_file=$2
   [[ -f "$hosts_file" ]] || return 0
-  output_file=$(mktemp "${TMPDIR:-/tmp}/radiance.XXXXXX")
+  output_file=$(mktemp "${TMPDIR:-/tmp}/marionette.XXXXXX")
   while IFS=' ' read -r alias user hostname fingerprint; do
     if [[ -z "$alias" ]]; then
       printf '\n'
@@ -66,7 +66,7 @@ marionette_write_known_hosts_file() {
   records=${1:-}
   known_hosts_file=$2
   [[ -f "$known_hosts_file" ]] || return 0
-  output_file=$(mktemp "${TMPDIR:-/tmp}/radiance.XXXXXX")
+  output_file=$(mktemp "${TMPDIR:-/tmp}/marionette.XXXXXX")
   while IFS= read -r line; do
     if [[ -z "$line" || "$line" == \#* ]]; then
       printf '%s\n' "$line"
