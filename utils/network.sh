@@ -39,12 +39,11 @@ network_neighbors_records() {
 network_neighbors_print() {
   local ip
   local fingerprint
-  local record_key
   local records
   records=${1:-}
   table_reset
   table_set_headers "IP" "SSH"
-  while IFS=$'\t' read -r ip fingerprint record_key; do
+  while IFS=$'\t' read -r ip fingerprint _; do
     [[ -n "${ip:-}" ]] || continue
     table_add_row "$ip" "$fingerprint"
   done <<<"$records"
@@ -59,7 +58,7 @@ network_neighbors_scan() {
     -n \
     -p 22 \
     --exclude "$me" \
-    "$@" 2>/dev/null || true
+    "$@" 2>/dev/null
 }
 
 network_neighbors_parse() {
@@ -96,8 +95,7 @@ network_ssh_details() {
   local fingerprint
   local key
   ip=$1
-  key_line="$(ssh_capture_key "$ip" || true)"
-  if [[ -z "$key_line" ]]; then
+  if ! key_line="$(ssh_capture_key "$ip")"; then
     printf '%s\t%s\n' '-' '-'
     return
   fi
