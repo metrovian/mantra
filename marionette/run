@@ -13,13 +13,12 @@ source_modules \
   ../utils/filesystem.sh \
   ../utils/host.sh \
   ../utils/profile.sh \
-  ../utils/ssh.sh
+  ../utils/ssh.sh \
+  ../utils/validate.sh
 
 main() {
+  validate_require_arg_min "$#" 1 || usage
   filesystem_prepare
-  if [ "$#" -eq 0 ]; then
-    usage
-  fi
   host_run_alias "$@"
 }
 

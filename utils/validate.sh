@@ -24,3 +24,11 @@ validate_require_arg_max() {
   maximum=$2
   [ "$actual" -le "$maximum" ]
 }
+
+validate_require_arg_min() {
+  local actual
+  local minimum
+  actual=$1
+  minimum=$2
+  [ "$actual" -ge "$minimum" ]
+}

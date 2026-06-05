@@ -17,9 +17,9 @@ source_modules \
   ../utils/validate.sh
 
 main() {
-  filesystem_prepare
   validate_require_arg_count "$#" 2 || usage
   validate_names "$1" "$2"
+  filesystem_prepare
   profile_require "$1"
   if ! host_exists "$1" "$2"; then
     exit 1
