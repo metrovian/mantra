@@ -67,18 +67,18 @@ host_add() {
     >>"$hosts_file"
 }
 
-host_remove_known_host() {
+host_remove_known_host_by_fingerprint() {
   local profile
   local fingerprint
-  local known_hosts
+  local known_hosts_file
   local output
   local line
   local line_fingerprint
   profile=$1
   fingerprint=$2
   [ -n "$fingerprint" ] || return 0
-  known_hosts=$(profile_known_hosts_file "$profile")
-  [ -f "$known_hosts" ] || return 0
+  known_hosts_file=$(profile_known_hosts_file "$profile")
+  [ -f "$known_hosts_file" ] || return 0
   output=$(mktemp "${TMPDIR:-/tmp}/marionette.XXXXXX")
   while IFS= read -r line; do
     if [ -z "$line" ] || [ "${line#\#}" != "$line" ]; then
@@ -90,14 +90,14 @@ host_remove_known_host() {
       continue
     fi
     printf '%s\n' "$line" >>"$output"
-  done <"$known_hosts"
-  file_replace_if_changed "$known_hosts" "$output"
+  done <"$known_hosts_file"
+  file_replace_if_changed "$known_hosts_file" "$output"
 }
 
 host_remove() {
   local profile
   local alias
-  local input
+  local hosts_file
   local output
   local host_alias
   local user
@@ -106,7 +106,7 @@ host_remove() {
   local removed_fingerprint
   profile=$1
   alias=$2
-  input=$(profile_hosts_file "$profile")
+  hosts_file=$(profile_hosts_file "$profile")
   output=$(mktemp "${TMPDIR:-/tmp}/marionette.XXXXXX")
   removed_fingerprint=
   while IFS=' ' read -r host_alias user hostname fingerprint; do
@@ -124,9 +124,9 @@ host_remove() {
       "$hostname" \
       "$fingerprint" \
       >>"$output"
-  done <"$input"
-  file_replace_if_changed "$input" "$output"
-  host_remove_known_host "$profile" "$removed_fingerprint"
+  done <"$hosts_file"
+  file_replace_if_changed "$hosts_file" "$output"
+  host_remove_known_host_by_fingerprint "$profile" "$removed_fingerprint"
 }
 
 host_write_ssh_config() {
