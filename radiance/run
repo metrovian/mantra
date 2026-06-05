@@ -11,12 +11,12 @@ source_modules() {
   done
 }
 
-[[ -f "$ROOT_DIR/abstracts/$OS.sh" ]] || exit 1
+[[ -f "$ROOT_DIR/../utils/abstracts/$OS.sh" ]] || exit 1
 source_modules \
-  abstracts/$OS.sh \
-  utils/marionette.sh \
-  utils/network.sh \
-  utils/pair.sh \
+  ../utils/abstracts/$OS.sh \
+  ../utils/marionette.sh \
+  ../utils/network.sh \
+  ../utils/pair.sh \
   ../utils/table.sh
 
 main() {
