@@ -111,16 +111,12 @@ filesystem_sync_profile() {
 
 filesystem_sync() {
   local records
-  local home_dir
-  local profiles_dir
   local profile_dir
   records=${1:-}
   [[ -n "$records" ]] || return 0
-  home_dir=${MANTRA_HOME:-"$HOME/.config/mantra"}
-  [[ -d "$home_dir" ]] || return 0
-  profiles_dir=$home_dir/profiles
-  mkdir -p "$profiles_dir"
-  for profile_dir in "$profiles_dir"/*; do
+  [[ -d "$MANTRA_HOME" ]] || return 0
+  mkdir -p "$MANTRA_PROFILES_DIR"
+  for profile_dir in "$MANTRA_PROFILES_DIR"/*; do
     [[ -d "$profile_dir" ]] || continue
     filesystem_sync_profile "$records" "$profile_dir"
   done

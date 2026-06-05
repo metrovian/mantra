@@ -16,6 +16,7 @@ source_modules \
 
 main() {
   local neighbors
+  filesystem_prepare
   if [[ $# -eq 0 ]]; then
     network_local
     return 0
