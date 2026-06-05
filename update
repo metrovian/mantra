@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-git submodule foreach --recursive '
-  git reset --hard --quiet &&
-  git clean -fd
-'
-git submodule update --init --recursive
