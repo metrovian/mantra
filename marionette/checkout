@@ -16,9 +16,9 @@ source_modules() {
 }
 
 source_modules \
-  utils/path.sh \
-  utils/profile.sh \
-  utils/validate.sh
+  ../utils/path.sh \
+  ../utils/profile.sh \
+  ../utils/validate.sh
 
 main() {
   path_prepare

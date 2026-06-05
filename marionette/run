@@ -16,9 +16,9 @@ source_modules() {
 }
 
 source_modules \
-  utils/host.sh \
-  utils/path.sh \
-  utils/profile.sh
+  ../utils/host.sh \
+  ../utils/path.sh \
+  ../utils/profile.sh
 
 main() {
   path_prepare

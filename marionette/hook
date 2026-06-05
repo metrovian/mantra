@@ -16,10 +16,10 @@ source_modules() {
 }
 
 source_modules \
-  utils/host.sh \
-  utils/path.sh \
-  utils/profile.sh \
-  utils/validate.sh
+  ../utils/host.sh \
+  ../utils/path.sh \
+  ../utils/profile.sh \
+  ../utils/validate.sh
 
 main() {
   local fingerprint
