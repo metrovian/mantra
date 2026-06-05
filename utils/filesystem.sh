@@ -115,7 +115,6 @@ filesystem_sync() {
   records=${1:-}
   [[ -n "$records" ]] || return 0
   [[ -d "$MANTRA_HOME" ]] || return 0
-  mkdir -p "$MANTRA_PROFILES_DIR"
   for profile_dir in "$MANTRA_PROFILES_DIR"/*; do
     [[ -d "$profile_dir" ]] || continue
     filesystem_sync_profile "$records" "$profile_dir"
