@@ -40,7 +40,7 @@ marionette_write_hosts_file() {
     fi
     printf '%s %s %s %s\n' "$alias" "$user" "$hostname" "$fingerprint"
   done <"$hosts_file" >"$output_file"
-  file_replace_if_changed "$hosts_file" "$output_file"
+  filesystem_replace_if_changed "$hosts_file" "$output_file"
 }
 
 marionette_write_known_hosts_file() {
@@ -72,7 +72,7 @@ marionette_write_known_hosts_file() {
     fi
     printf '%s %s\n' "$host_field" "$key"
   done <"$known_hosts_file" >"$output_file"
-  file_replace_if_changed "$known_hosts_file" "$output_file"
+  filesystem_replace_if_changed "$known_hosts_file" "$output_file"
 }
 
 marionette_sync_profile() {

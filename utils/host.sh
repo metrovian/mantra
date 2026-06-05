@@ -91,7 +91,7 @@ host_remove_known_host_by_fingerprint() {
     fi
     printf '%s\n' "$line" >>"$output"
   done <"$known_hosts_file"
-  file_replace_if_changed "$known_hosts_file" "$output"
+  filesystem_replace_if_changed "$known_hosts_file" "$output"
 }
 
 host_remove() {
@@ -125,7 +125,7 @@ host_remove() {
       "$fingerprint" \
       >>"$output"
   done <"$hosts_file"
-  file_replace_if_changed "$hosts_file" "$output"
+  filesystem_replace_if_changed "$hosts_file" "$output"
   host_remove_known_host_by_fingerprint "$profile" "$removed_fingerprint"
 }
 

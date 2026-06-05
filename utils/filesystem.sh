@@ -1,4 +1,4 @@
-file_replace_if_changed() {
+filesystem_replace_if_changed() {
   local target_file
   local output_file
   target_file=$1
