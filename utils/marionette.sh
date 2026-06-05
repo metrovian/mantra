@@ -10,14 +10,6 @@ marionette_replace_file() {
   fi
 }
 
-marionette_write_records_file() {
-  local records
-  local records_file
-  records=${1:-}
-  records_file=$2
-  printf '%s\n' "$records" >"$records_file"
-}
-
 marionette_host_for_fingerprint() {
   local fingerprint
   local records_file
@@ -132,7 +124,7 @@ marionette_sync() {
   profiles_dir=$home_dir/profiles
   mkdir -p "$profiles_dir"
   records_file=$(mktemp "${TMPDIR:-/tmp}/radiance.XXXXXX")
-  marionette_write_records_file "$records" "$records_file"
+  printf '%s\n' "$records" >"$records_file"
   for profile_dir in "$profiles_dir"/*; do
     [[ -d "$profile_dir" ]] || continue
     marionette_sync_profile "$records_file" "$profile_dir"
