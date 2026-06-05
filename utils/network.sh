@@ -90,43 +90,18 @@ network_neighbors_parse() {
   '
 }
 
-network_fingerprint_from_key() {
-  local key_line
-  local output
-  local type
-  local hash
-  key_line=$1
-  output=$(printf '%s\n' "$key_line" | ssh-keygen -lf - -E sha256 2>/dev/null) || return 1
-  [ -n "$output" ] || return 1
-  type=${output##* }
-  type=${type#(}
-  type=${type%)}
-  type=$(printf '%s' "$type" | tr '[:upper:]' '[:lower:]')
-  hash=$(printf '%s\n' "$output" | awk 'NR == 1 { print $2 }')
-  [ -n "$type" ] || return 1
-  [ -n "$hash" ] || return 1
-  printf '%s:%s\n' "$type" "$hash"
-}
-
 network_ssh_details() {
   local ip
   local key_line
   local fingerprint
   local key
   ip=$1
-  key_line="$({ ssh-keyscan -T 2 -t ed25519 "$ip" 2>/dev/null || true; } \
-    | awk 'NF >= 3 && $1 !~ /^#/ { print; exit }'
-  )"
-  if [[ -z "$key_line" ]]; then
-    key_line="$({ ssh-keyscan -T 2 "$ip" 2>/dev/null || true; } \
-      | awk 'NF >= 3 && $1 !~ /^#/ { print; exit }'
-    )"
-  fi
+  key_line="$(ssh_capture_key "$ip" || true)"
   if [[ -z "$key_line" ]]; then
     printf '%s\t%s\n' '-' '-'
     return
   fi
-  fingerprint="$(network_fingerprint_from_key "$key_line" || true)"
-  key=${key_line#* }
+  fingerprint="$(ssh_fingerprint_from_key "$key_line" || true)"
+  key="$(ssh_key_body "$key_line")"
   printf '%s\t%s\n' "${fingerprint:--}" "$key"
 }

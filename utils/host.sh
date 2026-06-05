@@ -59,22 +59,6 @@ host_add() {
     >>"$(profile_hosts_file "$profile")"
 }
 
-host_known_host_fingerprint() {
-  local key
-  local output
-  local type
-  local hash
-  key=$1
-  output=$(printf '%s\n' "$key" | ssh-keygen -lf - -E sha256 2>/dev/null) || return 1
-  [ -n "$output" ] || return 1
-  type=${output##* }
-  type=${type#(}
-  type=${type%)}
-  type=$(printf '%s' "$type" | tr '[:upper:]' '[:lower:]')
-  hash=$(printf '%s\n' "$output" | awk 'NR == 1 { print $2 }')
-  printf '%s:%s\n' "$type" "$hash"
-}
-
 host_remove_known_host() {
   local profile
   local fingerprint
@@ -94,7 +78,7 @@ host_remove_known_host() {
       printf '%s\n' "$line" >>"$output"
       continue
     fi
-    line_fingerprint=$(host_known_host_fingerprint "$line" || true)
+    line_fingerprint=$(ssh_fingerprint_from_key "$line" || true)
     if [ "$line_fingerprint" = "$fingerprint" ]; then
       continue
     fi
@@ -164,45 +148,6 @@ EOF2
   done <"$(profile_hosts_file "$profile")"
 }
 
-host_fingerprint_from_key() {
-  local key
-  local output
-  local type
-  local hash
-  key=$1
-  output=$(printf '%s\n' "$key" | ssh-keygen -lf - -E sha256 2>/dev/null) || return 1
-  [ -n "$output" ] || return 1
-  type=${output##* }
-  type=${type#(}
-  type=${type%)}
-  type=$(printf '%s' "$type" | tr '[:upper:]' '[:lower:]')
-  hash=$(printf '%s\n' "$output" | awk 'NR == 1 { print $2 }')
-  [ -n "$type" ] || return 1
-  [ -n "$hash" ] || return 1
-  printf '%s:%s\n' "$type" "$hash"
-}
-
-host_capture_ssh_key() {
-  local hostname
-  local output
-  hostname=$1
-  output="$({ ssh-keyscan -T 2 -t ed25519 "$hostname" 2>/dev/null || true; } \
-    | awk 'NF >= 3 && $1 !~ /^#/ { print; exit }'
-  )"
-  if [ -n "$output" ]; then
-    printf '%s\n' "$output"
-    return 0
-  fi
-  output="$({ ssh-keyscan -T 2 "$hostname" 2>/dev/null || true; } \
-    | awk 'NF >= 3 && $1 !~ /^#/ { print; exit }'
-  )"
-  if [ -n "$output" ]; then
-    printf '%s\n' "$output"
-    return 0
-  fi
-  return 1
-}
-
 host_record_known_host() {
   local profile
   local key
@@ -223,8 +168,8 @@ host_prepare_connection() {
   local fingerprint
   profile=$1
   hostname=$2
-  key=$(host_capture_ssh_key "$hostname") || return 1
-  fingerprint=$(host_fingerprint_from_key "$key") || return 1
+  key=$(ssh_capture_key "$hostname") || return 1
+  fingerprint=$(ssh_fingerprint_from_key "$key") || return 1
   [ -n "$fingerprint" ] || return 1
   host_record_known_host "$profile" "$key"
   printf '%s\n' "$fingerprint"

@@ -19,6 +19,7 @@ source_modules \
   ../utils/host.sh \
   ../utils/path.sh \
   ../utils/profile.sh \
+  ../utils/ssh.sh \
   ../utils/table.sh \
   ../utils/validate.sh
 

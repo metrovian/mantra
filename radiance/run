@@ -17,6 +17,7 @@ source_modules \
   ../utils/marionette.sh \
   ../utils/network.sh \
   ../utils/pair.sh \
+  ../utils/ssh.sh \
   ../utils/table.sh
 
 main() {
