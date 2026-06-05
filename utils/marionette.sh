@@ -123,7 +123,6 @@ marionette_sync() {
   local records
   local home_dir
   local profiles_dir
-  local state_dir
   local profile_dir
   local records_file
   records=${1:-}
@@ -131,8 +130,7 @@ marionette_sync() {
   home_dir=${MARIONETTE_HOME:-"$HOME/.config/marionette"}
   [[ -d "$home_dir" ]] || return 0
   profiles_dir=$home_dir/profiles
-  state_dir=$home_dir/state
-  mkdir -p "$profiles_dir" "$state_dir"
+  mkdir -p "$profiles_dir"
   records_file=$(mktemp "${TMPDIR:-/tmp}/radiance.XXXXXX")
   marionette_write_records_file "$records" "$records_file"
   for profile_dir in "$profiles_dir"/*; do
