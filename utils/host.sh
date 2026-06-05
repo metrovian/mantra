@@ -1,18 +1,21 @@
 host_exists() {
   local profile
   local alias
+  local hosts_file
   profile=$1
   alias=$2
-  if [ ! -f "$(profile_hosts_file "$profile")" ]; then
+  hosts_file=$(profile_hosts_file "$profile")
+  if [ ! -f "$hosts_file" ]; then
     return 1
   fi
-  awk -F '[ ]+' -v alias="$alias" '$1 == alias { found = 1 } END { exit !found }' \
-    "$(profile_hosts_file "$profile")"
+  awk -F '[ ]+' -v alias="$alias" \
+    '$1 == alias { found = 1 } END { exit !found }' "$hosts_file"
 }
 
 host_each() {
   local profile
   local callback
+  local hosts_file
   local alias
   local user
   local hostname
@@ -20,24 +23,27 @@ host_each() {
   profile=$1
   callback=$2
   shift 2
-  if [ ! -f "$(profile_hosts_file "$profile")" ]; then
+  hosts_file=$(profile_hosts_file "$profile")
+  if [ ! -f "$hosts_file" ]; then
     return 0
   fi
   while IFS=' ' read -r alias user hostname fingerprint; do
     [ -n "$alias" ] || continue
     "$callback" "$alias" "$user" "$hostname" "$fingerprint" "$@"
-  done <"$(profile_hosts_file "$profile")"
+  done <"$hosts_file"
 }
 
 host_count() {
   local profile
+  local hosts_file
   profile=$1
-  if [ ! -f "$(profile_hosts_file "$profile")" ]; then
+  hosts_file=$(profile_hosts_file "$profile")
+  if [ ! -f "$hosts_file" ]; then
     printf '0\n'
     return 0
   fi
-  awk -F '[ ]+' 'NF > 0 && $1 != "" { count++ } END { print count + 0 }' \
-    "$(profile_hosts_file "$profile")"
+  awk -F '[ ]+' \
+    'NF > 0 && $1 != "" { count++ } END { print count + 0 }' "$hosts_file"
 }
 
 host_add() {
@@ -46,17 +52,19 @@ host_add() {
   local user
   local hostname
   local fingerprint
+  local hosts_file
   profile=$1
   alias=$2
   user=$3
   hostname=$4
   fingerprint=${5:-}
+  hosts_file=$(profile_hosts_file "$profile")
   printf '%s %s %s %s\n' \
     "$alias" \
     "$user" \
     "$hostname" \
     "$fingerprint" \
-    >>"$(profile_hosts_file "$profile")"
+    >>"$hosts_file"
 }
 
 host_remove_known_host() {
@@ -124,12 +132,14 @@ host_remove() {
 host_write_ssh_config() {
   local profile
   local output
+  local hosts_file
   local known_hosts
   local alias
   local user
   local hostname
   profile=$1
   output=$2
+  hosts_file=$(profile_hosts_file "$profile")
   known_hosts=$(profile_known_hosts_file "$profile")
   if [ ! -f "$known_hosts" ]; then
     : >"$known_hosts"
@@ -144,7 +154,7 @@ Host $alias
   UserKnownHostsFile $known_hosts
 
 EOF2
-  done <"$(profile_hosts_file "$profile")"
+  done <"$hosts_file"
 }
 
 host_record_known_host() {
