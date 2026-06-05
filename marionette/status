@@ -19,7 +19,7 @@ source_modules \
   utils/host.sh \
   utils/path.sh \
   utils/profile.sh \
-  utils/table.sh \
+  ../utils/table.sh \
   utils/validate.sh
 
 status_add_host_row() {

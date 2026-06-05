@@ -17,7 +17,7 @@ source_modules \
   utils/marionette.sh \
   utils/network.sh \
   utils/pair.sh \
-  utils/table.sh
+  ../utils/table.sh
 
 main() {
   local neighbors
