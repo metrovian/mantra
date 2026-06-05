@@ -79,7 +79,7 @@ host_remove_known_host_by_fingerprint() {
   [ -n "$fingerprint" ] || return 0
   known_hosts_file=$(profile_known_hosts_file "$profile")
   [ -f "$known_hosts_file" ] || return 0
-  output=$(mktemp "${TMPDIR:-/tmp}/marionette.XXXXXX")
+  output=$(mktemp "${TMPDIR:-/tmp}/mantra.XXXXXX")
   while IFS= read -r line; do
     if [ -z "$line" ] || [ "${line#\#}" != "$line" ]; then
       printf '%s\n' "$line" >>"$output"
@@ -107,7 +107,7 @@ host_remove() {
   profile=$1
   alias=$2
   hosts_file=$(profile_hosts_file "$profile")
-  output=$(mktemp "${TMPDIR:-/tmp}/marionette.XXXXXX")
+  output=$(mktemp "${TMPDIR:-/tmp}/mantra.XXXXXX")
   removed_fingerprint=
   while IFS=' ' read -r host_alias user hostname fingerprint; do
     if [ -z "$host_alias" ]; then
@@ -194,6 +194,6 @@ host_run_alias() {
   if ! host_exists "$profile" "$alias"; then
     return 1
   fi
-  host_write_ssh_config "$profile" "$MARIONETTE_GENERATED_CONFIG_FILE"
-  exec ssh -F "$MARIONETTE_GENERATED_CONFIG_FILE" "$alias" "$@"
+  host_write_ssh_config "$profile" "$MANTRA_GENERATED_CONFIG_FILE"
+  exec ssh -F "$MANTRA_GENERATED_CONFIG_FILE" "$alias" "$@"
 }

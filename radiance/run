@@ -9,7 +9,6 @@ source "$ROOT_DIR/../utils/source.sh"
 source_modules \
   ../utils/abstracts/$OS.sh \
   ../utils/filesystem.sh \
-  ../utils/marionette.sh \
   ../utils/network.sh \
   ../utils/pair.sh \
   ../utils/ssh.sh \
@@ -22,7 +21,7 @@ main() {
     return 0
   fi
   neighbors="$(network_neighbors_records "$@")"
-  marionette_sync "$neighbors"
+  filesystem_sync "$neighbors"
   network_neighbors_print "$neighbors"
 }
 

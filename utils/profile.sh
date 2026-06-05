@@ -1,5 +1,5 @@
 profile_dir() {
-  printf '%s/%s\n' "$MARIONETTE_PROFILES_DIR" "$1"
+  printf '%s/%s\n' "$MANTRA_PROFILES_DIR" "$1"
 }
 
 profile_hosts_file() {
@@ -19,14 +19,14 @@ profile_require() {
 }
 
 profile_current() {
-  if [ ! -f "$MARIONETTE_CURRENT_PROFILE_FILE" ]; then
+  if [ ! -f "$MANTRA_CURRENT_PROFILE_FILE" ]; then
     return 1
   fi
-  sed -n '1p' "$MARIONETTE_CURRENT_PROFILE_FILE"
+  sed -n '1p' "$MANTRA_CURRENT_PROFILE_FILE"
 }
 
 profile_set_current() {
-  printf '%s\n' "$1" >"$MARIONETTE_CURRENT_PROFILE_FILE"
+  printf '%s\n' "$1" >"$MANTRA_CURRENT_PROFILE_FILE"
 }
 
 profile_clear_current_if_selected() {
@@ -35,16 +35,16 @@ profile_clear_current_if_selected() {
   profile=$1
   current=$(profile_current) || return 0
   if [ "$current" = "$profile" ]; then
-    rm -f "$MARIONETTE_CURRENT_PROFILE_FILE"
+    rm -f "$MANTRA_CURRENT_PROFILE_FILE"
   fi
 }
 
 profile_list() {
   local path
-  if [ ! -d "$MARIONETTE_PROFILES_DIR" ]; then
+  if [ ! -d "$MANTRA_PROFILES_DIR" ]; then
     return 0
   fi
-  for path in "$MARIONETTE_PROFILES_DIR"/*; do
+  for path in "$MANTRA_PROFILES_DIR"/*; do
     if [ -d "$path" ]; then
       basename "$path"
     fi
