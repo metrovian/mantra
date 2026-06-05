@@ -71,8 +71,7 @@ host_remove_known_host() {
   [ -n "$fingerprint" ] || return 0
   known_hosts=$(profile_known_hosts_file "$profile")
   [ -f "$known_hosts" ] || return 0
-  output=$known_hosts.tmp
-  : >"$output"
+  output=$(mktemp "${TMPDIR:-/tmp}/marionette.XXXXXX")
   while IFS= read -r line; do
     if [ -z "$line" ] || [ "${line#\#}" != "$line" ]; then
       printf '%s\n' "$line" >>"$output"
@@ -84,7 +83,7 @@ host_remove_known_host() {
     fi
     printf '%s\n' "$line" >>"$output"
   done <"$known_hosts"
-  mv "$output" "$known_hosts"
+  file_replace_if_changed "$known_hosts" "$output"
 }
 
 host_remove() {
@@ -100,7 +99,7 @@ host_remove() {
   profile=$1
   alias=$2
   input=$(profile_hosts_file "$profile")
-  output=$input.tmp
+  output=$(mktemp "${TMPDIR:-/tmp}/marionette.XXXXXX")
   removed_fingerprint=
   while IFS=' ' read -r host_alias user hostname fingerprint; do
     if [ -z "$host_alias" ]; then
@@ -118,7 +117,7 @@ host_remove() {
       "$fingerprint" \
       >>"$output"
   done <"$input"
-  mv "$output" "$input"
+  file_replace_if_changed "$input" "$output"
   host_remove_known_host "$profile" "$removed_fingerprint"
 }
 

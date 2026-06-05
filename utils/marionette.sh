@@ -1,15 +1,3 @@
-marionette_replace_file() {
-  local target_file
-  local output_file
-  target_file=$1
-  output_file=$2
-  if cmp -s "$target_file" "$output_file"; then
-    rm -f "$output_file"
-  else
-    mv "$output_file" "$target_file"
-  fi
-}
-
 marionette_record_host_for() {
   local records
   local field
@@ -52,7 +40,7 @@ marionette_write_hosts_file() {
     fi
     printf '%s %s %s %s\n' "$alias" "$user" "$hostname" "$fingerprint"
   done <"$hosts_file" >"$output_file"
-  marionette_replace_file "$hosts_file" "$output_file"
+  file_replace_if_changed "$hosts_file" "$output_file"
 }
 
 marionette_write_known_hosts_file() {
@@ -84,7 +72,7 @@ marionette_write_known_hosts_file() {
     fi
     printf '%s %s\n' "$host_field" "$key"
   done <"$known_hosts_file" >"$output_file"
-  marionette_replace_file "$known_hosts_file" "$output_file"
+  file_replace_if_changed "$known_hosts_file" "$output_file"
 }
 
 marionette_sync_profile() {
