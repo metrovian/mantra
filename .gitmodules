@@ -1,6 +1,0 @@
-[submodule "marionette"]
-	path = marionette
-	url = https://github.com/metrovian/marionette.git
-[submodule "radiance"]
-	path = radiance
-	url = https://github.com/metrovian/radiance.git
