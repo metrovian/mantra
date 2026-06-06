@@ -100,6 +100,6 @@ network_ssh_details() {
     return
   fi
   fingerprint="$(ssh_fingerprint_from_key "$key_line" || true)"
-  key="$(ssh_key_body "$key_line")"
+  key="${key_line#* }"
   printf '%s\t%s\n' "${fingerprint:--}" "$key"
 }

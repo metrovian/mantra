@@ -24,9 +24,3 @@ ssh_capture_key() {
     || awk 'NF >= 3 && $1 !~ /^#/ { print; found = 1; exit }
       END { exit !found }' <<<"$output"
 }
-
-ssh_key_body() {
-  local key
-  key=$1
-  printf '%s\n' "${key#* }"
-}
