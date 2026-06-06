@@ -16,7 +16,7 @@ source_modules \
 
 main() {
   [ "$#" -ge 1 ] || usage
-  filesystem_prepare
+  profile_prepare
   host_run_alias "$@"
 }
 

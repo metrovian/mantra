@@ -1,13 +1,18 @@
+profile_prepare() {
+  MANTRA_HOME=${MANTRA_HOME:-"$HOME/.config/mantra"}
+  MANTRA_PROFILES_DIR=$MANTRA_HOME/profiles
+  MANTRA_STATE_DIR=$MANTRA_HOME/state
+  MANTRA_CURRENT_PROFILE_FILE=$MANTRA_STATE_DIR/current_profile
+  MANTRA_GENERATED_CONFIG_FILE=$MANTRA_STATE_DIR/ssh_config
+  mkdir -p "$MANTRA_PROFILES_DIR" "$MANTRA_STATE_DIR"
+}
+
 profile_dir() {
   printf '%s/%s\n' "$MANTRA_PROFILES_DIR" "$1"
 }
 
-profile_hosts_file() {
-  printf '%s/hosts\n' "$(profile_dir "$1")"
-}
-
-profile_known_hosts_file() {
-  printf '%s/known_hosts\n' "$(profile_dir "$1")"
+profile_path() {
+  printf '%s/%s\n' "$(profile_dir "$1")" "$2"
 }
 
 profile_exists() {
@@ -55,8 +60,8 @@ profile_add() {
   local name
   name=$1
   mkdir -p "$(profile_dir "$name")"
-  : >"$(profile_hosts_file "$name")"
-  : >"$(profile_known_hosts_file "$name")"
+  : >"$(profile_path "$name" hosts)"
+  : >"$(profile_path "$name" known_hosts)"
 }
 
 profile_remove() {

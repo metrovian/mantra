@@ -17,7 +17,7 @@ source_modules \
 main() {
   [ "$#" -eq 1 ] || usage
   validate_names "$1"
-  filesystem_prepare
+  profile_prepare
   profile_require "$1"
   profile_set_current "$1"
   exec "$ROOT_DIR/status"

@@ -19,7 +19,7 @@ source_modules \
 main() {
   [ "$#" -eq 2 ] || usage
   validate_names "$1" "$2"
-  filesystem_prepare
+  profile_prepare
   profile_require "$1"
   if ! host_exists "$1" "$2"; then
     exit 1

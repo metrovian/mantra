@@ -20,7 +20,7 @@ main() {
   local fingerprint
   [ "$#" -eq 4 ] || usage
   validate_names "$1" "$2" "$3"
-  filesystem_prepare
+  profile_prepare
   profile_require "$1"
   if host_exists "$1" "$2"; then
     exit 1

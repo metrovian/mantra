@@ -17,7 +17,7 @@ source_modules \
 main() {
   [ "$#" -eq 1 ] || usage
   validate_names "$1"
-  filesystem_prepare
+  profile_prepare
   profile_require "$1"
   profile_clear_current_if_selected "$1"
   profile_remove "$1"

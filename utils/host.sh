@@ -4,7 +4,7 @@ host_exists() {
   local hosts_file
   profile=$1
   alias=$2
-  hosts_file=$(profile_hosts_file "$profile")
+  hosts_file=$(profile_path "$profile" hosts)
   if [ ! -f "$hosts_file" ]; then
     return 1
   fi
@@ -23,7 +23,7 @@ host_each() {
   profile=$1
   callback=$2
   shift 2
-  hosts_file=$(profile_hosts_file "$profile")
+  hosts_file=$(profile_path "$profile" hosts)
   if [ ! -f "$hosts_file" ]; then
     return 0
   fi
@@ -37,7 +37,7 @@ host_count() {
   local profile
   local hosts_file
   profile=$1
-  hosts_file=$(profile_hosts_file "$profile")
+  hosts_file=$(profile_path "$profile" hosts)
   if [ ! -f "$hosts_file" ]; then
     printf '0\n'
     return 0
@@ -58,7 +58,7 @@ host_add() {
   user=$3
   hostname=$4
   fingerprint=${5:-}
-  hosts_file=$(profile_hosts_file "$profile")
+  hosts_file=$(profile_path "$profile" hosts)
   printf '%s %s %s %s\n' \
     "$alias" \
     "$user" \
@@ -77,7 +77,7 @@ host_remove_known_host_by_fingerprint() {
   profile=$1
   fingerprint=$2
   [ -n "$fingerprint" ] || return 0
-  known_hosts_file=$(profile_known_hosts_file "$profile")
+  known_hosts_file=$(profile_path "$profile" known_hosts)
   [ -f "$known_hosts_file" ] || return 0
   output=$(mktemp "${TMPDIR:-/tmp}/mantra.XXXXXX")
   while IFS= read -r line; do
@@ -106,7 +106,7 @@ host_remove() {
   local removed_fingerprint
   profile=$1
   alias=$2
-  hosts_file=$(profile_hosts_file "$profile")
+  hosts_file=$(profile_path "$profile" hosts)
   output=$(mktemp "${TMPDIR:-/tmp}/mantra.XXXXXX")
   removed_fingerprint=
   while IFS=' ' read -r host_alias user hostname fingerprint; do
@@ -139,8 +139,8 @@ host_write_ssh_config() {
   local hostname
   profile=$1
   output=$2
-  hosts_file=$(profile_hosts_file "$profile")
-  known_hosts=$(profile_known_hosts_file "$profile")
+  hosts_file=$(profile_path "$profile" hosts)
+  known_hosts=$(profile_path "$profile" known_hosts)
   if [ ! -f "$known_hosts" ]; then
     : >"$known_hosts"
   fi
@@ -168,7 +168,7 @@ host_prepare_connection() {
   key=$(ssh_capture_key "$hostname") || return 1
   fingerprint=$(ssh_fingerprint_from_key "$key") || return 1
   [ -n "$fingerprint" ] || return 1
-  known_hosts=$(profile_known_hosts_file "$profile")
+  known_hosts=$(profile_path "$profile" known_hosts)
   if ! grep -Fqx "$key" "$known_hosts" 2>/dev/null; then
     printf '%s\n' "$key" >>"$known_hosts"
   fi

@@ -30,7 +30,7 @@ main() {
   local name
   local profile
   [ "$#" -le 1 ] || usage
-  filesystem_prepare
+  profile_prepare
   if [ "$#" -eq 1 ]; then
     selected=$1
   else
