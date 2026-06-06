@@ -7,10 +7,10 @@ OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 source "$ROOT_DIR/../utils/source.sh"
 source_modules \
   ../utils/abstracts/$OS.sh \
-  ../utils/profile.sh \
   ../utils/host.sh \
   ../utils/network.sh \
   ../utils/pair.sh \
+  ../utils/profile.sh \
   ../utils/ssh.sh \
   ../utils/table.sh
 
