@@ -5,7 +5,6 @@ OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 
 # shellcheck source=/dev/null
 source "$ROOT_DIR/../utils/source.sh"
-[[ -f "$ROOT_DIR/../utils/abstracts/$OS.sh" ]] || exit 1
 source_modules \
   ../utils/abstracts/$OS.sh \
   ../utils/filesystem.sh \
