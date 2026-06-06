@@ -7,7 +7,8 @@ OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 source "$ROOT_DIR/../utils/source.sh"
 source_modules \
   ../utils/abstracts/$OS.sh \
-  ../utils/filesystem.sh \
+  ../utils/profile.sh \
+  ../utils/host.sh \
   ../utils/network.sh \
   ../utils/pair.sh \
   ../utils/ssh.sh \
@@ -20,8 +21,8 @@ main() {
     return 0
   fi
   neighbors="$(network_neighbors_records "$@")"
-  filesystem_prepare
-  filesystem_sync "$neighbors"
+  profile_prepare
+  host_sync "$neighbors"
   network_neighbors_print "$neighbors"
 }
 

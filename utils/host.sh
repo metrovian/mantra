@@ -67,6 +67,112 @@ host_add() {
     >>"$hosts_file"
 }
 
+host_replace() {
+  local target_file
+  local output_file
+  target_file=$1
+  output_file=$2
+  if cmp -s "$target_file" "$output_file"; then
+    rm -f "$output_file"
+  else
+    mv "$output_file" "$target_file"
+  fi
+}
+
+host_record_for() {
+  local records
+  local field
+  local value
+  records=${1:-}
+  field=$2
+  value=$3
+  awk -F '\t' -v field="$field" -v value="$value" '
+    $1 != "" && $field == value {
+      print $1
+      exit
+    }
+  ' <<<"$records"
+}
+
+host_write_hosts_file() {
+  local records
+  local hosts_file
+  local output_file
+  local alias
+  local user
+  local hostname
+  local fingerprint
+  local matched_host
+  records=${1:-}
+  hosts_file=$2
+  [ -f "$hosts_file" ] || return 0
+  output_file=$(mktemp "${TMPDIR:-/tmp}/mantra.XXXXXX")
+  while IFS=' ' read -r alias user hostname fingerprint; do
+    if [ -z "$alias" ]; then
+      printf '\n'
+      continue
+    fi
+    matched_host=
+    if [ -n "$fingerprint" ] && [ "$fingerprint" != "-" ]; then
+      matched_host=$(host_record_for "$records" 2 "$fingerprint")
+    fi
+    if [ -n "$matched_host" ]; then
+      hostname=$matched_host
+    fi
+    printf '%s %s %s %s\n' "$alias" "$user" "$hostname" "$fingerprint"
+  done <"$hosts_file" >"$output_file"
+  host_replace "$hosts_file" "$output_file"
+}
+
+host_write_known_hosts_file() {
+  local records
+  local known_hosts_file
+  local output_file
+  local line
+  local host_field
+  local key
+  local matched_host
+  records=${1:-}
+  known_hosts_file=$2
+  [ -f "$known_hosts_file" ] || return 0
+  output_file=$(mktemp "${TMPDIR:-/tmp}/mantra.XXXXXX")
+  while IFS= read -r line; do
+    if [ -z "$line" ] || [ "${line#\#}" != "$line" ]; then
+      printf '%s\n' "$line"
+      continue
+    fi
+    host_field=${line%% *}
+    key=${line#* }
+    if [ "$host_field" = "$line" ]; then
+      printf '%s\n' "$line"
+      continue
+    fi
+    matched_host=$(host_record_for "$records" 3 "$key")
+    if [ -n "$matched_host" ]; then
+      host_field=$matched_host
+    fi
+    printf '%s %s\n' "$host_field" "$key"
+  done <"$known_hosts_file" >"$output_file"
+  host_replace "$known_hosts_file" "$output_file"
+}
+
+host_sync() {
+  local records
+  local profile_dir
+  local hosts_file
+  local known_hosts_file
+  records=${1:-}
+  [ -n "$records" ] || return 0
+  [ -d "$MANTRA_HOME" ] || return 0
+  for profile_dir in "$MANTRA_PROFILES_DIR"/*; do
+    [ -d "$profile_dir" ] || continue
+    hosts_file=$profile_dir/hosts
+    known_hosts_file=$profile_dir/known_hosts
+    host_write_hosts_file "$records" "$hosts_file"
+    host_write_known_hosts_file "$records" "$known_hosts_file"
+  done
+}
+
 host_remove_known_host_by_fingerprint() {
   local profile
   local fingerprint
@@ -91,7 +197,7 @@ host_remove_known_host_by_fingerprint() {
     fi
     printf '%s\n' "$line" >>"$output"
   done <"$known_hosts_file"
-  filesystem_replace_if_changed "$known_hosts_file" "$output"
+  host_replace "$known_hosts_file" "$output"
 }
 
 host_remove() {
@@ -125,7 +231,7 @@ host_remove() {
       "$fingerprint" \
       >>"$output"
   done <"$hosts_file"
-  filesystem_replace_if_changed "$hosts_file" "$output"
+  host_replace "$hosts_file" "$output"
   host_remove_known_host_by_fingerprint "$profile" "$removed_fingerprint"
 }
 
