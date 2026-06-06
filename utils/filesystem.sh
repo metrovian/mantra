@@ -96,27 +96,19 @@ filesystem_write_known_hosts_file() {
   filesystem_replace_if_changed "$known_hosts_file" "$output_file"
 }
 
-filesystem_sync_profile() {
+filesystem_sync() {
   local records
   local profile_dir
   local hosts_file
   local known_hosts_file
   records=${1:-}
-  profile_dir=$2
-  hosts_file=$profile_dir/hosts
-  known_hosts_file=$profile_dir/known_hosts
-  filesystem_write_hosts_file "$records" "$hosts_file"
-  filesystem_write_known_hosts_file "$records" "$known_hosts_file"
-}
-
-filesystem_sync() {
-  local records
-  local profile_dir
-  records=${1:-}
   [[ -n "$records" ]] || return 0
   [[ -d "$MANTRA_HOME" ]] || return 0
   for profile_dir in "$MANTRA_PROFILES_DIR"/*; do
     [[ -d "$profile_dir" ]] || continue
-    filesystem_sync_profile "$records" "$profile_dir"
+    hosts_file=$profile_dir/hosts
+    known_hosts_file=$profile_dir/known_hosts
+    filesystem_write_hosts_file "$records" "$hosts_file"
+    filesystem_write_known_hosts_file "$records" "$known_hosts_file"
   done
 }
