@@ -280,17 +280,3 @@ host_prepare_connection() {
   fi
   printf '%s\n' "$fingerprint"
 }
-
-host_run_alias() {
-  local alias
-  local profile
-  alias=$1
-  shift
-  profile=$(profile_current) || return 1
-  profile_require "$profile" || return 1
-  if ! host_exists "$profile" "$alias"; then
-    return 1
-  fi
-  host_write_ssh_config "$profile" "$MANTRA_GENERATED_CONFIG_FILE"
-  exec ssh -F "$MANTRA_GENERATED_CONFIG_FILE" "$alias" "$@"
-}
