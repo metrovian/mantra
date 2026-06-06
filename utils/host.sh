@@ -157,30 +157,21 @@ EOF2
   done <"$hosts_file"
 }
 
-host_record_known_host() {
-  local profile
-  local key
-  local known_hosts
-  profile=$1
-  key=$2
-  known_hosts=$(profile_known_hosts_file "$profile")
-  if grep -Fqx "$key" "$known_hosts" 2>/dev/null; then
-    return 0
-  fi
-  printf '%s\n' "$key" >>"$known_hosts"
-}
-
 host_prepare_connection() {
   local profile
   local hostname
   local key
   local fingerprint
+  local known_hosts
   profile=$1
   hostname=$2
   key=$(ssh_capture_key "$hostname") || return 1
   fingerprint=$(ssh_fingerprint_from_key "$key") || return 1
   [ -n "$fingerprint" ] || return 1
-  host_record_known_host "$profile" "$key"
+  known_hosts=$(profile_known_hosts_file "$profile")
+  if ! grep -Fqx "$key" "$known_hosts" 2>/dev/null; then
+    printf '%s\n' "$key" >>"$known_hosts"
+  fi
   printf '%s\n' "$fingerprint"
 }
 
