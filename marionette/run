@@ -12,8 +12,7 @@ source "$ROOT_DIR/../utils/source.sh"
 source_modules \
   ../utils/filesystem.sh \
   ../utils/host.sh \
-  ../utils/profile.sh \
-  ../utils/ssh.sh
+  ../utils/profile.sh
 
 main() {
   [ "$#" -ge 1 ] || usage
