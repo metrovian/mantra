@@ -18,9 +18,7 @@ main() {
   [ "$#" -eq 1 ] || usage
   validate_names "$1"
   filesystem_prepare
-  if ! profile_exists "$1"; then
-    exit 1
-  fi
+  profile_require "$1"
   profile_set_current "$1"
   exec "$ROOT_DIR/status"
 }
