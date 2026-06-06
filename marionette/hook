@@ -18,7 +18,7 @@ source_modules \
 
 main() {
   local fingerprint
-  validate_require_arg_count "$#" 4 || usage
+  [ "$#" -eq 4 ] || usage
   validate_names "$1" "$2" "$3"
   filesystem_prepare
   profile_require "$1"

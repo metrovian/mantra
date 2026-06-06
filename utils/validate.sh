@@ -8,27 +8,3 @@ validate_names() {
     esac
   done
 }
-
-validate_require_arg_count() {
-  local actual
-  local expected
-  actual=$1
-  expected=$2
-  [ "$actual" -eq "$expected" ]
-}
-
-validate_require_arg_max() {
-  local actual
-  local maximum
-  actual=$1
-  maximum=$2
-  [ "$actual" -le "$maximum" ]
-}
-
-validate_require_arg_min() {
-  local actual
-  local minimum
-  actual=$1
-  minimum=$2
-  [ "$actual" -ge "$minimum" ]
-}

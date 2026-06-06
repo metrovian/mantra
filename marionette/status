@@ -14,8 +14,7 @@ source_modules \
   ../utils/host.sh \
   ../utils/profile.sh \
   ../utils/ssh.sh \
-  ../utils/table.sh \
-  ../utils/validate.sh
+  ../utils/table.sh
 
 status_add_host_row() {
   local alias
@@ -31,7 +30,7 @@ main() {
   local selected
   local name
   local profile
-  validate_require_arg_max "$#" 1 || usage
+  [ "$#" -le 1 ] || usage
   filesystem_prepare
   if [ "$#" -eq 1 ]; then
     selected=$1

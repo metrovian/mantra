@@ -15,7 +15,7 @@ source_modules \
   ../utils/validate.sh
 
 main() {
-  validate_require_arg_count "$#" 1 || usage
+  [ "$#" -eq 1 ] || usage
   validate_names "$1"
   filesystem_prepare
   if ! profile_exists "$1"; then

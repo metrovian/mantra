@@ -17,7 +17,7 @@ source_modules \
   ../utils/validate.sh
 
 main() {
-  validate_require_arg_count "$#" 2 || usage
+  [ "$#" -eq 2 ] || usage
   validate_names "$1" "$2"
   filesystem_prepare
   profile_require "$1"
