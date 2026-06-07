@@ -20,15 +20,15 @@ network_neighbors_records() {
   local ip
   local fingerprint
   local key
-  while IFS=$'\t' read -r ip; do
-    [[ -n "${ip:-}" ]] || continue
-    IFS=$'\t' read -r fingerprint key <<<"$(network_ssh_details "$ip")"
-    fingerprint=${fingerprint:--}
-    key=${key:--}
-    printf '%s\t%s\t%s\n' "$ip" "$fingerprint" "$key"
-  done < <(
-    network_neighbors_scan "$@" | network_neighbors_parse
-  )
+  network_neighbors_scan "$@" \
+    | network_neighbors_parse \
+    | while IFS=$'\t' read -r ip; do
+      [[ -n "${ip:-}" ]] || continue
+      IFS=$'\t' read -r fingerprint key <<<"$(network_ssh_details "$ip")"
+      fingerprint=${fingerprint:--}
+      key=${key:--}
+      printf '%s\t%s\t%s\n' "$ip" "$fingerprint" "$key"
+    done
 }
 
 network_neighbors_print() {
