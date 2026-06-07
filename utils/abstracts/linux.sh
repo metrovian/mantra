@@ -1,14 +1,3 @@
-inspect_me() {
-  local cidr
-  local iface
-  iface="$(ip route show default | awk 'NR==1 {print $5}')"
-  cidr="$(
-    ip -o -f inet addr show dev "$iface" scope global \
-      | awk 'NR==1 {print $4}'
-  )"
-  awk -F/ 'NR==1 {print $1}' <<<"$cidr"
-}
-
 inspect_network() {
   local cidr
   local gateway

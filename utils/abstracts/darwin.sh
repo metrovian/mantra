@@ -1,10 +1,3 @@
-inspect_me() {
-  local iface
-  iface="$(route -n get default | awk '/interface:/ {print $2}')"
-  ifconfig "$iface" \
-    | awk '/inet / && $2 != "127.0.0.1" {print $2; exit}'
-}
-
 inspect_network() {
   local gateway
   local iface
