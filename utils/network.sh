@@ -18,16 +18,11 @@ network_local() {
 
 network_neighbors_records() {
   local ip
-  local ssh_host
   local fingerprint
   local key
-  while IFS=$'\t' read -r ip ssh_host; do
+  while IFS=$'\t' read -r ip; do
     [[ -n "${ip:-}" ]] || continue
-    fingerprint='-'
-    key='-'
-    if [[ -n "${ssh_host:-}" ]]; then
-      IFS=$'\t' read -r fingerprint key <<<"$(network_ssh_details "$ssh_host")"
-    fi
+    IFS=$'\t' read -r fingerprint key <<<"$(network_ssh_details "$ip")"
     fingerprint=${fingerprint:--}
     key=${key:--}
     printf '%s\t%s\t%s\n' "$ip" "$fingerprint" "$key"
@@ -56,28 +51,13 @@ network_neighbors_scan() {
 
 network_neighbors_parse() {
   awk '
-    function emit() {
-      if (ip == "") {
-        return
-      }
-      print ip "\t" ssh
-    }
     /^Nmap scan report for / {
-      emit()
       ip = $NF
-      ssh = ""
       next
     }
     /^22\/tcp[[:space:]]+open[[:space:]]+ssh$/ {
-      ssh = ip
+      print ip
       next
-    }
-    /^Nmap done:/ {
-      emit()
-      ip = ""
-    }
-    END {
-      emit()
     }
   '
 }
