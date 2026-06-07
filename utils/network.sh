@@ -51,14 +51,7 @@ network_neighbors_print() {
 }
 
 network_neighbors_scan() {
-  local me
-  me="$(inspect_me)"
-  [[ -n "${me:-}" ]] || return 1
-  sudo nmap \
-    -n \
-    -p 22 \
-    --exclude "$me" \
-    "$@" 2>/dev/null
+  nmap -sT -Pn -n -p 22 --open "$@" 2>/dev/null
 }
 
 network_neighbors_parse() {
