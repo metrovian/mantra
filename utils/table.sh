@@ -109,41 +109,59 @@ table_truncate() {
   fi
 }
 
-table_print() {
-  local format
-  local separator_line
-  local row
+table_separator_cell() {
+  local index
+  index=$1
+  printf '%*s' "${TABLE_WIDTHS[$index]}" '' | tr ' ' '-'
+  if ((index == TABLE_COLUMN_COUNT - 1)); then
+    printf '%s\n' '-'
+  else
+    printf ' '
+  fi
+}
+
+table_print_cell() {
+  local index
+  local value
+  index=$1
+  value=$2
+  value="$(table_truncate "$value" "${TABLE_WIDTHS[$index]}")"
+  if ((index == TABLE_COLUMN_COUNT - 1)); then
+    printf '%s\n' "$value"
+  else
+    printf '%-*s ' "${TABLE_WIDTHS[$index]}" "$value"
+  fi
+}
+
+table_print_row() {
   local index
   local value
   local -a fields
-  table_fit_terminal
-  format=""
-  separator_line=""
+  fields=("$@")
   for ((index = 0; index < TABLE_COLUMN_COUNT; index++)); do
-    if ((index < TABLE_COLUMN_COUNT - 1)); then
-      format+="%-${TABLE_WIDTHS[$index]}s "
-      separator_line+="$(printf '%*s' "${TABLE_WIDTHS[$index]}" '' | tr ' ' '-') "
-    else
-      format+="%s"
-      separator_line+="$(printf '%*s' "${TABLE_WIDTHS[$index]}" '' | tr ' ' '-')"
-    fi
+    value="${fields[$index]:-}"
+    table_print_cell "$index" "$value"
   done
-  format+=$'\n'
-  separator_line+="-"
-  fields=("${TABLE_HEADERS[@]}")
-  # shellcheck disable=SC2059
-  printf "$format" "${fields[@]}"
-  printf "%s\n" "$separator_line"
+}
+
+table_print_separator() {
+  local index
+  for ((index = 0; index < TABLE_COLUMN_COUNT; index++)); do
+    table_separator_cell "$index"
+  done
+}
+
+table_print() {
+  local row
+  local -a fields
+  table_fit_terminal
+  table_print_row "${TABLE_HEADERS[@]}"
+  table_print_separator
   if [ "${#TABLE_ROWS[@]}" -eq 0 ]; then
     return 0
   fi
   for row in "${TABLE_ROWS[@]}"; do
     IFS=$'\t' read -r -a fields <<<"$row"
-    for ((index = 0; index < TABLE_COLUMN_COUNT; index++)); do
-      value="${fields[$index]:-}"
-      fields[index]="$(table_truncate "$value" "${TABLE_WIDTHS[$index]}")"
-    done
-    # shellcheck disable=SC2059
-    printf "$format" "${fields[@]}"
+    table_print_row "${fields[@]}"
   done
 }
