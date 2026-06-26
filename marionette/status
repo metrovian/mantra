@@ -3,7 +3,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
-  echo "$0 [profile]" >&2
+  echo "$0" >&2
   exit 1
 }
 
@@ -25,36 +25,13 @@ status_add_host_row() {
 }
 
 main() {
-  local selected
-  local name
   local profile
-  [ "$#" -le 1 ] || usage
+  [ "$#" -eq 0 ] || usage
   profile_prepare
-  if [ "$#" -eq 1 ]; then
-    selected=$1
-  else
-    selected=$(profile_current) || selected=
-  fi
-  if [ -n "$selected" ]; then
-    profile_require "$selected"
-  fi
-  table_reset
-  table_set_headers PROFILE HOST
-  for name in $(profile_list); do
-    profile=$name
-    if [ "$name" = "$selected" ]; then
-      profile="$name*"
-    fi
-    table_add_row "$profile" "$(host_count "$name")"
-  done
-  table_print
-  if [ -z "$selected" ]; then
-    exit 0
-  fi
-  echo
+  profile=$(profile_default)
   table_reset
   table_set_headers ALIAS USER SSH
-  host_each "$selected" status_add_host_row
+  host_each "$profile" status_add_host_row
   table_print
 }
 

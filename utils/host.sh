@@ -94,6 +94,10 @@ host_record_for() {
   ' <<<"$records"
 }
 
+host_key_alias() {
+  printf 'mantra-%s\n' "$1"
+}
+
 host_write_hosts_file() {
   local records
   local hosts_file
@@ -147,6 +151,12 @@ host_write_known_hosts_file() {
       printf '%s\n' "$line"
       continue
     fi
+    case "$host_field" in
+      mantra-*)
+        printf '%s\n' "$line"
+        continue
+        ;;
+    esac
     matched_host=$(host_record_for "$records" 3 "$key")
     if [ -n "$matched_host" ]; then
       host_field=$matched_host
@@ -154,6 +164,46 @@ host_write_known_hosts_file() {
     printf '%s %s\n' "$host_field" "$key"
   done <"$known_hosts_file" >"$output_file"
   host_replace "$known_hosts_file" "$output_file"
+}
+
+host_ensure_known_host_aliases() {
+  local profile
+  local hosts_file
+  local known_hosts_file
+  local known_hosts_input
+  local alias
+  local user
+  local hostname
+  local fingerprint
+  local key_alias
+  local line
+  local line_fingerprint
+  profile=$1
+  hosts_file=$(profile_path "$profile" hosts)
+  known_hosts_file=$(profile_path "$profile" known_hosts)
+  [ -f "$hosts_file" ] || return 0
+  [ -f "$known_hosts_file" ] || return 0
+  known_hosts_input=$(mktemp "${TMPDIR:-/tmp}/mantra.XXXXXX")
+  cp "$known_hosts_file" "$known_hosts_input"
+  while IFS=' ' read -r alias user hostname fingerprint; do
+    [ -n "$alias" ] || continue
+    [ -n "$fingerprint" ] || continue
+    [ "$fingerprint" != "-" ] || continue
+    key_alias=$(host_key_alias "$alias")
+    if grep -Fq "$key_alias " "$known_hosts_file"; then
+      continue
+    fi
+    while IFS= read -r line; do
+      [ -n "$line" ] || continue
+      [ "${line#\#}" = "$line" ] || continue
+      line_fingerprint=$(ssh_fingerprint_from_key "$line" || true)
+      if [ "$line_fingerprint" = "$fingerprint" ]; then
+        printf '%s %s\n' "$key_alias" "${line#* }" >>"$known_hosts_file"
+        break
+      fi
+    done <"$known_hosts_input"
+  done <"$hosts_file"
+  rm -f "$known_hosts_input"
 }
 
 host_sync() {
@@ -173,16 +223,21 @@ host_sync() {
   done
 }
 
-host_remove_known_host_by_fingerprint() {
+host_remove_known_host() {
   local profile
+  local alias
   local fingerprint
   local known_hosts_file
   local output
   local line
+  local host_field
+  local key_alias
   local line_fingerprint
   profile=$1
-  fingerprint=$2
+  alias=$2
+  fingerprint=$3
   [ -n "$fingerprint" ] || return 0
+  key_alias=$(host_key_alias "$alias")
   known_hosts_file=$(profile_path "$profile" known_hosts)
   [ -f "$known_hosts_file" ] || return 0
   output=$(mktemp "${TMPDIR:-/tmp}/mantra.XXXXXX")
@@ -191,6 +246,16 @@ host_remove_known_host_by_fingerprint() {
       printf '%s\n' "$line" >>"$output"
       continue
     fi
+    host_field=${line%% *}
+    if [ "$host_field" = "$key_alias" ]; then
+      continue
+    fi
+    case "$host_field" in
+      mantra-*)
+        printf '%s\n' "$line" >>"$output"
+        continue
+        ;;
+    esac
     line_fingerprint=$(ssh_fingerprint_from_key "$line" || true)
     if [ "$line_fingerprint" = "$fingerprint" ]; then
       continue
@@ -232,7 +297,7 @@ host_remove() {
       >>"$output"
   done <"$hosts_file"
   host_replace "$hosts_file" "$output"
-  host_remove_known_host_by_fingerprint "$profile" "$removed_fingerprint"
+  host_remove_known_host "$profile" "$alias" "$removed_fingerprint"
 }
 
 host_write_ssh_config() {
@@ -243,6 +308,7 @@ host_write_ssh_config() {
   local alias
   local user
   local hostname
+  local key_alias
   profile=$1
   output=$2
   hosts_file=$(profile_path "$profile" hosts)
@@ -250,13 +316,16 @@ host_write_ssh_config() {
   if [ ! -f "$known_hosts" ]; then
     : >"$known_hosts"
   fi
+  host_ensure_known_host_aliases "$profile"
   : >"$output"
   while IFS=' ' read -r alias user hostname _; do
     [ -n "$alias" ] || continue
+    key_alias=$(host_key_alias "$alias")
     cat >>"$output" <<EOF2
 Host $alias
   HostName $hostname
   User $user
+  HostKeyAlias $key_alias
   UserKnownHostsFile $known_hosts
 
 EOF2
@@ -265,18 +334,24 @@ EOF2
 
 host_prepare_connection() {
   local profile
+  local alias
   local hostname
   local key
+  local key_alias
+  local known_key
   local fingerprint
   local known_hosts
   profile=$1
-  hostname=$2
+  alias=$2
+  hostname=$3
   key=$(ssh_capture_key "$hostname") || return 1
   fingerprint=$(ssh_fingerprint_from_key "$key") || return 1
   [ -n "$fingerprint" ] || return 1
+  key_alias=$(host_key_alias "$alias")
+  known_key="$key_alias ${key#* }"
   known_hosts=$(profile_path "$profile" known_hosts)
-  if ! grep -Fqx "$key" "$known_hosts" 2>/dev/null; then
-    printf '%s\n' "$key" >>"$known_hosts"
+  if ! grep -Fqx "$known_key" "$known_hosts" 2>/dev/null; then
+    printf '%s\n' "$known_key" >>"$known_hosts"
   fi
   printf '%s\n' "$fingerprint"
 }

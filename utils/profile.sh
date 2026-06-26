@@ -5,6 +5,12 @@ profile_prepare() {
   MANTRA_CURRENT_PROFILE_FILE=$MANTRA_STATE_DIR/current_profile
   MANTRA_GENERATED_CONFIG_FILE=$MANTRA_STATE_DIR/ssh_config
   mkdir -p "$MANTRA_PROFILES_DIR" "$MANTRA_STATE_DIR"
+  profile_add "$(profile_default)"
+  profile_migrate_current
+}
+
+profile_default() {
+  printf 'default\n'
 }
 
 profile_dir() {
@@ -23,47 +29,29 @@ profile_require() {
   profile_exists "$1"
 }
 
-profile_current() {
-  if [ ! -f "$MANTRA_CURRENT_PROFILE_FILE" ]; then
-    return 1
-  fi
-  sed -n '1p' "$MANTRA_CURRENT_PROFILE_FILE"
-}
-
-profile_set_current() {
-  printf '%s\n' "$1" >"$MANTRA_CURRENT_PROFILE_FILE"
-}
-
-profile_clear_current_if_selected() {
+profile_migrate_current() {
   local current
-  local profile
-  profile=$1
-  current=$(profile_current) || return 0
-  if [ "$current" = "$profile" ]; then
-    rm -f "$MANTRA_CURRENT_PROFILE_FILE"
+  local default
+  local default_hosts
+  current=
+  default=$(profile_default)
+  default_hosts=$(profile_path "$default" hosts)
+  [ -s "$default_hosts" ] && return 0
+  [ -f "$MANTRA_CURRENT_PROFILE_FILE" ] || return 0
+  current=$(sed -n '1p' "$MANTRA_CURRENT_PROFILE_FILE")
+  [ -n "$current" ] || return 0
+  [ "$current" = "$default" ] && return 0
+  [ -f "$(profile_path "$current" hosts)" ] || return 0
+  cp "$(profile_path "$current" hosts)" "$default_hosts"
+  if [ -f "$(profile_path "$current" known_hosts)" ]; then
+    cp "$(profile_path "$current" known_hosts)" "$(profile_path "$default" known_hosts)"
   fi
-}
-
-profile_list() {
-  local path
-  if [ ! -d "$MANTRA_PROFILES_DIR" ]; then
-    return 0
-  fi
-  for path in "$MANTRA_PROFILES_DIR"/*; do
-    if [ -d "$path" ]; then
-      basename "$path"
-    fi
-  done
 }
 
 profile_add() {
   local name
   name=$1
   mkdir -p "$(profile_dir "$name")"
-  : >"$(profile_path "$name" hosts)"
-  : >"$(profile_path "$name" known_hosts)"
-}
-
-profile_remove() {
-  rm -rf "$(profile_dir "$1")"
+  [ -f "$(profile_path "$name" hosts)" ] || : >"$(profile_path "$name" hosts)"
+  [ -f "$(profile_path "$name" known_hosts)" ] || : >"$(profile_path "$name" known_hosts)"
 }

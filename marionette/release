@@ -3,7 +3,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
-  echo "$0 <profile> <alias>" >&2
+  echo "$0 <alias>" >&2
   exit 1
 }
 
@@ -16,15 +16,16 @@ source_modules \
   ../utils/validate.sh
 
 main() {
-  [ "$#" -eq 2 ] || usage
-  validate_names "$1" "$2"
+  local profile
+  [ "$#" -eq 1 ] || usage
+  validate_names "$1"
   profile_prepare
-  profile_require "$1"
-  if ! host_exists "$1" "$2"; then
+  profile=$(profile_default)
+  if ! host_exists "$profile" "$1"; then
     exit 1
   fi
-  host_remove "$1" "$2"
-  exec "$ROOT_DIR/status" "$1"
+  host_remove "$profile" "$1"
+  exec "$ROOT_DIR/status"
 }
 
 main "$@"
