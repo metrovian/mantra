@@ -1,8 +1,10 @@
 host_exists() {
+  local alias
+  alias=$1
   if [ ! -f "$MANTRA_HOSTS_FILE" ]; then
     return 1
   fi
-  awk -F '[ ]+' -v alias="$1" \
+  awk -F '[ ]+' -v alias="$alias" \
     '$1 == alias { found = 1 } END { exit !found }' "$MANTRA_HOSTS_FILE"
 }
 
@@ -24,19 +26,31 @@ host_each() {
 }
 
 host_add() {
+  local alias
+  local user
+  local hostname
+  local fingerprint
+  alias=$1
+  user=$2
+  hostname=$3
+  fingerprint=${4:-}
   printf '%s %s %s %s\n' \
-    "$1" \
-    "$2" \
-    "$3" \
-    "${4:-}" \
+    "$alias" \
+    "$user" \
+    "$hostname" \
+    "$fingerprint" \
     >>"$MANTRA_HOSTS_FILE"
 }
 
 host_replace() {
-  if cmp -s "$1" "$2"; then
-    rm -f "$2"
+  local target_file
+  local output_file
+  target_file=$1
+  output_file=$2
+  if cmp -s "$target_file" "$output_file"; then
+    rm -f "$output_file"
   else
-    mv "$2" "$1"
+    mv "$output_file" "$target_file"
   fi
 }
 
@@ -117,6 +131,7 @@ host_sync() {
 }
 
 host_remove() {
+  local alias
   local output
   local known_hosts_output
   local host_alias
@@ -126,14 +141,15 @@ host_remove() {
   local line
   local host_field
   local key_alias
-  key_alias=$(host_key_alias "$1")
+  alias=$1
+  key_alias=$(host_key_alias "$alias")
   output=$(mktemp "${TMPDIR:-/tmp}/mantra.XXXXXX")
   while IFS=' ' read -r host_alias user hostname fingerprint; do
     if [ -z "$host_alias" ]; then
       printf '\n' >>"$output"
       continue
     fi
-    if [ "$host_alias" = "$1" ]; then
+    if [ "$host_alias" = "$alias" ]; then
       continue
     fi
     printf '%s %s %s %s\n' \
@@ -164,6 +180,7 @@ host_write_ssh_config() {
   local alias
   local user
   local hostname
+  local key_alias
   output=$1
   if [ ! -f "$MANTRA_KNOWN_HOSTS_FILE" ]; then
     : >"$MANTRA_KNOWN_HOSTS_FILE"
@@ -171,11 +188,12 @@ host_write_ssh_config() {
   : >"$output"
   while IFS=' ' read -r alias user hostname _; do
     [ -n "$alias" ] || continue
+    key_alias=$(host_key_alias "$alias")
     cat >>"$output" <<EOF2
 Host $alias
   HostName $hostname
   User $user
-  HostKeyAlias $(host_key_alias "$alias")
+  HostKeyAlias $key_alias
   UserKnownHostsFile $MANTRA_KNOWN_HOSTS_FILE
 
 EOF2
@@ -183,13 +201,19 @@ EOF2
 }
 
 host_prepare_connection() {
+  local alias
+  local hostname
   local key
+  local key_alias
   local known_key
   local fingerprint
-  key=$(ssh_capture_key "$2") || return 1
+  alias=$1
+  hostname=$2
+  key=$(ssh_capture_key "$hostname") || return 1
   fingerprint=$(ssh_fingerprint_from_key "$key") || return 1
   [ -n "$fingerprint" ] || return 1
-  known_key="$(host_key_alias "$1") ${key#* }"
+  key_alias=$(host_key_alias "$alias")
+  known_key="$key_alias ${key#* }"
   if ! grep -Fqx "$known_key" "$MANTRA_KNOWN_HOSTS_FILE" 2>/dev/null; then
     printf '%s\n' "$known_key" >>"$MANTRA_KNOWN_HOSTS_FILE"
   fi
