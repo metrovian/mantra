@@ -15,23 +15,15 @@ source_modules \
   ../utils/table.sh
 
 status_add_host_row() {
-  local alias
-  local user
-  local fingerprint
-  alias=$1
-  user=$2
-  fingerprint=${4:--}
-  table_add_row "$alias" "$user" "$fingerprint"
+  table_add_row "$1" "$2" "${4:--}"
 }
 
 main() {
-  local profile
   [ "$#" -eq 0 ] || usage
   profile_prepare
-  profile=$(profile_default)
   table_reset
   table_set_headers ALIAS USER SSH
-  host_each "$profile" status_add_host_row
+  host_each status_add_host_row
   table_print
 }
 

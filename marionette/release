@@ -12,19 +12,16 @@ source "$ROOT_DIR/../utils/source.sh"
 source_modules \
   ../utils/host.sh \
   ../utils/profile.sh \
-  ../utils/ssh.sh \
   ../utils/validate.sh
 
 main() {
-  local profile
   [ "$#" -eq 1 ] || usage
   validate_names "$1"
   profile_prepare
-  profile=$(profile_default)
-  if ! host_exists "$profile" "$1"; then
+  if ! host_exists "$1"; then
     exit 1
   fi
-  host_remove "$profile" "$1"
+  host_remove "$1"
   exec "$ROOT_DIR/status"
 }
 

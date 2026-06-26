@@ -11,21 +11,18 @@ usage() {
 source "$ROOT_DIR/../utils/source.sh"
 source_modules \
   ../utils/host.sh \
-  ../utils/profile.sh \
-  ../utils/ssh.sh
+  ../utils/profile.sh
 
 main() {
   local alias
-  local profile
   [ "$#" -ge 1 ] || usage
   alias=$1
   shift
   profile_prepare
-  profile=$(profile_default)
-  if ! host_exists "$profile" "$alias"; then
+  if ! host_exists "$alias"; then
     return 1
   fi
-  host_write_ssh_config "$profile" "$MANTRA_GENERATED_CONFIG_FILE"
+  host_write_ssh_config "$MANTRA_GENERATED_CONFIG_FILE"
   exec ssh -F "$MANTRA_GENERATED_CONFIG_FILE" "$alias" "$@"
 }
 

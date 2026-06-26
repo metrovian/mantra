@@ -16,17 +16,15 @@ source_modules \
   ../utils/validate.sh
 
 main() {
-  local profile
   local fingerprint
   [ "$#" -eq 3 ] || usage
   validate_names "$1" "$2"
   profile_prepare
-  profile=$(profile_default)
-  if host_exists "$profile" "$1"; then
+  if host_exists "$1"; then
     exit 1
   fi
-  fingerprint=$(host_prepare_connection "$profile" "$1" "$3")
-  host_add "$profile" "$1" "$2" "$3" "$fingerprint"
+  fingerprint=$(host_prepare_connection "$1" "$3")
+  host_add "$1" "$2" "$3" "$fingerprint"
   exec "$ROOT_DIR/status"
 }
 
