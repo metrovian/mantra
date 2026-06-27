@@ -44,13 +44,28 @@ host_add() {
 
 host_replace() {
   local target_file
+  local callback
   local output_file
+  local target_dir
+  local target_name
   target_file=$1
-  output_file=$2
+  callback=$2
+  shift 2
+  case "$target_file" in
+    */*) target_dir=${target_file%/*} ;;
+    *) target_dir=. ;;
+  esac
+  target_name=${target_file##*/}
+  output_file=$(mktemp "$target_dir/.${target_name}.XXXXXX")
+  if ! "$callback" "$@" >"$output_file"; then
+    rm -f "$output_file"
+    return 1
+  fi
   if cmp -s "$target_file" "$output_file"; then
     rm -f "$output_file"
-  else
-    mv "$output_file" "$target_file"
+  elif ! mv "$output_file" "$target_file"; then
+    rm -f "$output_file"
+    return 1
   fi
 }
 
@@ -73,21 +88,14 @@ host_key_alias() {
   printf 'mantra-%s\n' "$1"
 }
 
-host_sync() {
+host_sync_hosts() {
   local records
-  local output_file
-  local known_hosts_output
   local alias
   local user
   local hostname
   local fingerprint
   local matched_host
-  local line
-  local host_field
-  local key
   records=${1:-}
-  [ -n "$records" ] || return 0
-  output_file=$(mktemp "${TMPDIR:-/tmp}/mantra.XXXXXX")
   while IFS=' ' read -r alias user hostname fingerprint; do
     if [ -z "$alias" ]; then
       printf '\n'
@@ -101,9 +109,16 @@ host_sync() {
       hostname=$matched_host
     fi
     printf '%s %s %s %s\n' "$alias" "$user" "$hostname" "$fingerprint"
-  done <"$MANTRA_HOSTS_FILE" >"$output_file"
-  host_replace "$MANTRA_HOSTS_FILE" "$output_file"
-  known_hosts_output=$(mktemp "${TMPDIR:-/tmp}/mantra.XXXXXX")
+  done <"$MANTRA_HOSTS_FILE"
+}
+
+host_sync_known_hosts() {
+  local records
+  local line
+  local host_field
+  local key
+  local matched_host
+  records=${1:-}
   while IFS= read -r line; do
     if [ -z "$line" ] || [ "${line#\#}" != "$line" ]; then
       printf '%s\n' "$line"
@@ -126,27 +141,27 @@ host_sync() {
       host_field=$matched_host
     fi
     printf '%s %s\n' "$host_field" "$key"
-  done <"$MANTRA_KNOWN_HOSTS_FILE" >"$known_hosts_output"
-  host_replace "$MANTRA_KNOWN_HOSTS_FILE" "$known_hosts_output"
+  done <"$MANTRA_KNOWN_HOSTS_FILE"
 }
 
-host_remove() {
+host_sync() {
+  local records
+  records=${1:-}
+  [ -n "$records" ] || return 0
+  host_replace "$MANTRA_HOSTS_FILE" host_sync_hosts "$records"
+  host_replace "$MANTRA_KNOWN_HOSTS_FILE" host_sync_known_hosts "$records"
+}
+
+host_remove_hosts() {
   local alias
-  local output
-  local known_hosts_output
   local host_alias
   local user
   local hostname
   local fingerprint
-  local line
-  local host_field
-  local key_alias
   alias=$1
-  key_alias=$(host_key_alias "$alias")
-  output=$(mktemp "${TMPDIR:-/tmp}/mantra.XXXXXX")
   while IFS=' ' read -r host_alias user hostname fingerprint; do
     if [ -z "$host_alias" ]; then
-      printf '\n' >>"$output"
+      printf '\n'
       continue
     fi
     if [ "$host_alias" = "$alias" ]; then
@@ -156,11 +171,17 @@ host_remove() {
       "$host_alias" \
       "$user" \
       "$hostname" \
-      "$fingerprint" \
-      >>"$output"
+      "$fingerprint"
   done <"$MANTRA_HOSTS_FILE"
-  host_replace "$MANTRA_HOSTS_FILE" "$output"
-  known_hosts_output=$(mktemp "${TMPDIR:-/tmp}/mantra.XXXXXX")
+}
+
+host_remove_known_hosts() {
+  local alias
+  local line
+  local host_field
+  local key_alias
+  alias=$1
+  key_alias=$(host_key_alias "$alias")
   while IFS= read -r line; do
     if [ -z "$line" ] || [ "${line#\#}" != "$line" ]; then
       printf '%s\n' "$line"
@@ -171,8 +192,14 @@ host_remove() {
       continue
     fi
     printf '%s\n' "$line"
-  done <"$MANTRA_KNOWN_HOSTS_FILE" >"$known_hosts_output"
-  host_replace "$MANTRA_KNOWN_HOSTS_FILE" "$known_hosts_output"
+  done <"$MANTRA_KNOWN_HOSTS_FILE"
+}
+
+host_remove() {
+  local alias
+  alias=$1
+  host_replace "$MANTRA_HOSTS_FILE" host_remove_hosts "$alias"
+  host_replace "$MANTRA_KNOWN_HOSTS_FILE" host_remove_known_hosts "$alias"
 }
 
 host_write_ssh_config() {
