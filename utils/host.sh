@@ -112,44 +112,11 @@ host_sync_hosts() {
   done <"$MANTRA_HOSTS_FILE"
 }
 
-host_sync_known_hosts() {
-  local records
-  local line
-  local host_field
-  local key
-  local matched_host
-  records=${1:-}
-  while IFS= read -r line; do
-    if [ -z "$line" ] || [ "${line#\#}" != "$line" ]; then
-      printf '%s\n' "$line"
-      continue
-    fi
-    host_field=${line%% *}
-    key=${line#* }
-    if [ "$host_field" = "$line" ]; then
-      printf '%s\n' "$line"
-      continue
-    fi
-    case "$host_field" in
-      mantra-*)
-        printf '%s\n' "$line"
-        continue
-        ;;
-    esac
-    matched_host=$(host_record_for "$records" 3 "$key")
-    if [ -n "$matched_host" ]; then
-      host_field=$matched_host
-    fi
-    printf '%s %s\n' "$host_field" "$key"
-  done <"$MANTRA_KNOWN_HOSTS_FILE"
-}
-
 host_sync() {
   local records
   records=${1:-}
   [ -n "$records" ] || return 0
   host_replace "$MANTRA_HOSTS_FILE" host_sync_hosts "$records"
-  host_replace "$MANTRA_KNOWN_HOSTS_FILE" host_sync_known_hosts "$records"
 }
 
 host_remove_hosts() {
