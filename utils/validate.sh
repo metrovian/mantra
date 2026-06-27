@@ -8,3 +8,13 @@ validate_names() {
     esac
   done
 }
+
+validate_hostname() {
+  local hostname
+  hostname=$1
+  case "$hostname" in
+    ""|-*|*[!a-zA-Z0-9._:%-]*)
+      return 1
+      ;;
+  esac
+}

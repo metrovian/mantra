@@ -19,6 +19,7 @@ main() {
   local fingerprint
   [ "$#" -eq 3 ] || usage
   validate_names "$1" "$2"
+  validate_hostname "$3"
   profile_prepare
   if host_exists "$1"; then
     exit 1
